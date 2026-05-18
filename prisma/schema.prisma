@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  projects  Project[]
+  createdAt DateTime @default(now())
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  projectName String
+  status      String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  outfits     Outfit[]
+  references  Reference[]
+  createdAt   DateTime @default(now())
+}
+
+model Outfit {
+  id           String   @id @default(uuid())
+  projectId    String
+  project      Project  @relation(fields: [projectId], references: [id])
+  imageUrl     String
+  sku          String?
+  category     String?
+  uploadStatus String
+  jobs         GenerationJob[]
+  createdAt    DateTime @default(now())
+}
+
+model Reference {
+  id            String   @id @default(uuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id])
+  referenceType String
+  imageUrl      String
+  createdAt     DateTime @default(now())
+}
+
+model GenerationJob {
+  id               String   @id @default(uuid())
+  outfitId         String
+  outfit           Outfit   @relation(fields: [outfitId], references: [id])
+  prompt           String
+  status           String
+  retryCount       Int      @default(0)
+  outputsRequested Int
+  failedReason     String?
+  generatedImages  GeneratedImage[]
+  createdAt        DateTime @default(now())
+}
+
+model GeneratedImage {
+  id        String   @id @default(uuid())
+  jobId     String
+  job       GenerationJob @relation(fields: [jobId], references: [id])
+  imageUrl  String
+  createdAt DateTime @default(now())
+}

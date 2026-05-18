@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Header from "@/components/ui/Header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,9 +26,20 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      data-scroll-behavior="smooth"
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body 
+        className="min-h-full flex flex-col bg-background selection:bg-violet-500/30"
+        suppressHydrationWarning
+      >
+        <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-violet-900/20 via-background to-background" />
+        <div className="fixed inset-0 -z-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150" />
+        <Header />
+        <main className="flex-1">
+          {children}
+        </main>
+      </body>
     </html>
   );
 }

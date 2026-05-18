@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Outfit Image Generation Tool
 
-## Getting Started
+A high-performance AI fashion generation platform built with Next.js 15, Supabase, and Google Cloud Storage.
 
-First, run the development server:
+## 🚀 Features
 
+- **Multi-Image & ZIP Upload**: Batch upload garments or extract images from ZIP files locally.
+- **Organized GCS Storage**: Automatic folder structure (`/outfits`, `/references`, `/generated`) in Google Cloud Storage.
+- **Structured Prompt Engine**: Advanced prompting that separates garment preservation from creative direction.
+- **Async Queue System**: Scalable background processing using BullMQ and Redis.
+- **Live Dashboard**: Real-time status tracking and project performance analytics.
+- **Output Gallery**: Before/after comparisons, categorical filtering, and easy downloads.
+
+## 🛠️ Tech Stack
+
+- **Frontend**: Next.js 15 (App Router), Tailwind CSS, Framer Motion, Lucide Icons.
+- **Database**: Supabase (PostgreSQL) with Prisma ORM.
+- **Storage**: Google Cloud Storage.
+- **Queue**: BullMQ & ioredis (via Upstash Redis).
+- **AI Model**: Nano Banana 2 (Simulated integration).
+
+## 📋 Setup & Architecture
+
+### 1. Environment Variables
+Create a `.env` file with the following:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Supabase Database
+DATABASE_URL="postgresql://postgres.[REF]:[PASS]@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://postgres:[PASS]@db.[REF].supabase.co:5432/postgres"
+
+# Upstash Redis (TCP Protocol)
+REDIS_URL="rediss://default:[PASS]@fitting-koi-127430.upstash.io:6379"
+
+# Google Cloud Storage
+GCS_BUCKET_NAME="your-bucket"
+GCS_PROJECT_ID="your-project-id"
+GCS_CLIENT_EMAIL="your-service-account-email"
+GCS_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n..."
+
+# AI API
+NANO_BANANA_API_KEY="your_api_key"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Database Sync
+```bash
+npx prisma generate
+npx prisma db push
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Start the Application
+You need two terminals:
+```bash
+# Terminal 1: Frontend
+npm run dev
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Terminal 2: AI Worker
+npm run worker
+```
 
-## Learn More
+## 🧠 Consistency Logic
+The tool preserves garment consistency through a **Structured Prompt Block**:
+1. **Preservation Block**: Locked instructions for fabric, stitching, and seams.
+2. **Creative Block**: Dynamic styling and aesthetic instructions.
+3. **Reference Block**: Interpretive logic for lighting, pose, and background.
 
-To learn more about Next.js, take a look at the following resources:
+## ⚠️ Limitations
+- **Worker Environment**: In local dev, ensure the worker is running alongside the Next.js server.
+- **Cold Starts**: Initial generation might take 5-10 seconds due to worker initialization.
+- **Storage Access**: Ensure GCS bucket "Public Access Prevention" is OFF for gallery rendering.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+Built for the AI Outfit Image Generation Tool Assignment.
