@@ -47,9 +47,9 @@ DO NOT redesign, simplify, or reinterpret any aspect of the garment.
 // ─── Block 2: Reference Interpretation ───────────────────────────────────────
 
 export const generateReferenceBlock = (ref?: PromptConfig['references']) => {
-  let pose = ref?.pose || 'dynamic fashion editorial standing pose, with natural movement and an elegant weight shift (never standing stiffly or still like a robot)'
-  if (pose.toLowerCase().includes('standing') && !pose.toLowerCase().includes('dynamic')) {
-    pose = 'dynamic fashion editorial standing pose, with natural movement and an elegant weight shift (never standing stiffly or still like a robot)'
+  let pose = ref?.pose || 'dynamic professional fashion editorial pose, with natural movement, fluid body language, and a realistic organic weight shift (never look stiff, rigid, static, or like a robot)'
+  if (pose && !pose.toLowerCase().includes('dynamic')) {
+    pose = `dynamic professional fashion editorial pose (${pose}), with natural movement, fluid body language, and a realistic organic weight shift (never look stiff, rigid, static, or like a robot)`
   }
   return `
 [REFERENCE INTERPRETATION]

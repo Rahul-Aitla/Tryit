@@ -49,8 +49,8 @@ export async function enhancePromptWithAI(params: {
     ? Object.entries(referenceSelections)
         .map(([k, v]) => {
           let val = v
-          if (k === 'pose' && v.toLowerCase().includes('standing')) {
-            val = 'dynamic fashion editorial standing pose, with natural movement and an elegant weight shift (never standing stiffly or still like a robot)'
+          if (k === 'pose') {
+            val = `dynamic professional fashion editorial pose (${v}), with natural movement, fluid body language, and a realistic organic weight shift (never look stiff, rigid, static, or like a robot standing still)`
           }
           return `- ${k}: ${val}`
         })

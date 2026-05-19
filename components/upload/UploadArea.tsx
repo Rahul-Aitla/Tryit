@@ -1,7 +1,7 @@
 "use client"
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useState, useEffect } from "react"
 import UploadCard from "./UploadCard"
-import { Upload, Cloud, Zap, ArrowRight, Sparkles, FolderUp, Globe, Link as LinkIcon, Eye, Save, FileText, X } from "lucide-react"
+import { Upload, Cloud, ArrowRight, Globe, Save, FileText, X, Plus, Loader2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import JSZip from "jszip"
 
@@ -20,27 +20,63 @@ type FileEntry = {
 import { ReferenceSelections } from "@/components/upload/ReferencesPanel"
 
 interface UploadAreaProps {
+  projectId: string | null
   outputsRequested: number
   prompt: string
   referenceSelections?: ReferenceSelections
   onProjectReady?: (projectId: string) => void
 }
 
-export default function UploadArea({ outputsRequested, prompt, referenceSelections, onProjectReady }: UploadAreaProps) {
+interface Outfit {
+  id: string
+  imageUrl: string
+  category?: string
+}
+
+export default function UploadArea({ projectId, outputsRequested, prompt, referenceSelections, onProjectReady }: UploadAreaProps) {
   const [items, setItems] = useState<FileEntry[]>([])
   const [isDragging, setIsDragging] = useState(false)
-  const [driveUrl, setDriveUrl] = useState("")
+
+  // Drive Import state
   const [showDriveInput, setShowDriveInput] = useState(false)
+  const [driveUrl, setDriveUrl] = useState("")
   const [driveLoading, setDriveLoading] = useState(false)
   const [driveError, setDriveError] = useState<string | null>(null)
-  const [projectId, setProjectId] = useState<string | null>(null)
-  const [isInitializing, setIsInitializing] = useState(true)
-  const [initError, setInitError] = useState<string | null>(null)
 
   // Advanced Prompt Editable Layer state
   const [showPromptPreview, setShowPromptPreview] = useState(false)
   const [customPrompt, setCustomPrompt] = useState<string>("")
   const [refiningPrompt, setRefiningPrompt] = useState(false)
+
+  // Load existing outfits when projectId changes
+  useEffect(() => {
+    if (!projectId) return
+
+    const fetchOutfits = async () => {
+      try {
+        const res = await fetch(`/api/outfits?projectId=${projectId}`)
+        if (res.ok) {
+          const data = await res.json()
+          const existingItems: FileEntry[] = (data.data || []).map((outfit: Outfit) => ({
+            id: outfit.id,
+            file: new Blob([]), // Dummy blob for existing items
+            name: outfit.imageUrl.split("/").pop() || "outfit.jpg",
+            size: 0,
+            preview: outfit.imageUrl,
+            progress: 100,
+            status: "uploaded" as const,
+            tags: ["Existing", outfit.category].filter(Boolean),
+            dbId: outfit.id,
+          }))
+          setItems(existingItems)
+        }
+      } catch (err) {
+        console.error("Failed to fetch outfits:", err)
+      }
+    }
+
+    fetchOutfits()
+  }, [projectId])
 
   const getCompiledPrompt = useCallback(() => {
     if (customPrompt) return customPrompt
@@ -98,25 +134,22 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
     return `${outfitLock}\n\n${refsBlock}\n\n${creative}\n\n${negative}\n\n${output}`
   }, [customPrompt, prompt, referenceSelections])
 
-  const handleRetry = useCallback(() => {
-    window.location.reload()
-  }, [])
+  // Initialize a default project if none provided
+  useEffect(() => {
+    if (projectId) {
+      return
+    }
 
-  // Initialize a default project for the assignment
-  React.useEffect(() => {
     let active = true
     const initProject = async () => {
       try {
         const res = await fetch("/api/projects")
         if (!res.ok) {
-          const errData = await res.json().catch(() => ({}))
-          if (active) setInitError(errData.details || `Server returned ${res.status}`)
           return
         }
         const projects = await res.json()
         if (Array.isArray(projects) && projects.length > 0) {
           if (active) {
-            setProjectId(projects[0].id)
             onProjectReady?.(projects[0].id)
           }
         } else {
@@ -126,28 +159,21 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
             headers: { "Content-Type": "application/json" }
           })
           if (!createRes.ok) {
-            const errData = await createRes.json().catch(() => ({}))
-            if (active) setInitError(errData.details || `Failed to create default project`)
             return
           }
           const newProject = await createRes.json()
           if (active) {
-            setProjectId(newProject.id)
             onProjectReady?.(newProject.id)
           }
         }
-        if (active) setInitError(null)
       } catch (err) {
         console.error("Failed to init project:", err)
-        if (active) setInitError(err instanceof Error ? err.message : "Unknown initialization error")
-      } finally {
-        if (active) setIsInitializing(false)
       }
     }
     
     initProject()
     return () => { active = false }
-  }, [onProjectReady])
+  }, [onProjectReady, projectId])
 
   const processFiles = useCallback(async (files: File[]) => {
     if (!projectId) return
@@ -225,22 +251,6 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
       }
     })
   }, [projectId])
-
-  const addFiles = useCallback((files: FileList | null) => {
-    if (!files) return
-    processFiles(Array.from(files))
-  }, [processFiles])
-
-  const onDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
-    addFiles(e.dataTransfer.files)
-  }, [addFiles])
-
-  const onFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    addFiles(e.target.files)
-    e.currentTarget.value = ""
-  }, [addFiles])
 
   const handleDriveSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -367,268 +377,155 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
     }
   }, [prompt, referenceSelections, customPrompt, startGeneration, getCompiledPrompt])
 
-  const uploadedCount = items.filter(it => it.status === "uploaded").length
-  const processingCount = items.filter(it => it.status === "processing").length
-  const doneCount = items.filter(it => it.status === "done").length
-
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col h-full gap-6">
+      {/* Upload Area */}
       <div
-        onDrop={onDrop}
-        onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
         onDragLeave={() => setIsDragging(false)}
-        className={`relative overflow-hidden rounded-[2rem] border-2 border-dashed transition-all duration-300 ${
-          isDragging 
-            ? "border-violet-500 bg-violet-500/5 shadow-2xl shadow-violet-500/10 scale-[0.99]" 
-            : "border-border/60 bg-card/30 hover:border-border hover:bg-card/50"
-        } ${isInitializing || initError ? "pointer-events-none" : ""}`}
+        onDrop={(e) => {
+          e.preventDefault()
+          setIsDragging(false)
+          const files = Array.from(e.dataTransfer.files)
+          processFiles(files)
+        }}
+        className={`relative flex-1 min-h-[400px] rounded-[2.5rem] border-2 border-dashed transition-all duration-500 overflow-hidden flex flex-col items-center justify-center p-12 ${
+          isDragging
+            ? "border-primary bg-primary/[0.02] scale-[0.99]"
+            : "border-black/5 dark:border-white/5 bg-gradient-to-b from-white dark:from-white/[0.02] to-slate-50 dark:to-transparent shadow-elevated"
+        }`}
       >
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_120%,rgba(124,58,237,0.1),transparent)]" />
-        
-        {isInitializing && (
-          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-background/60 backdrop-blur-[2px]">
-            <div className="h-8 w-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-sm font-medium text-muted-foreground">Initializing AI Workspace...</p>
-          </div>
-        )}
-
-        {initError && (
-          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm p-6 text-center">
-            <div className="h-12 w-12 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-500 mb-4">
-              <Zap className="h-6 w-6" />
-            </div>
-            <h4 className="text-lg font-bold mb-2">Connection Error</h4>
-            <p className="text-sm text-muted-foreground max-w-xs mb-6">
-              {initError}. Please check your database connection.
-            </p>
-            <button 
-              onClick={handleRetry}
-              className="bg-foreground text-background px-6 py-2 rounded-full text-sm font-bold active:scale-95 transition-all"
+        <AnimatePresence>
+          {items.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center text-center max-w-md"
             >
-              Retry Connection
-            </button>
-          </div>
-        )}
-        
-        <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
-          <motion.div 
-            initial={false}
-            animate={{ y: isDragging ? -10 : 0 }}
-            className="mb-8 h-20 w-20 rounded-[2rem] bg-gradient-to-tr from-violet-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-[0_0_30px_rgba(124,58,237,0.3)] transition-transform duration-300 group-hover:scale-105"
-          >
-            <Upload className="h-9 w-9 text-white" />
-          </motion.div>
-          
-          <h3 className="text-3xl font-extrabold tracking-tight text-foreground mb-3 font-display">
-            Upload your garments
-          </h3>
-          <p className="text-muted-foreground font-medium max-w-sm mb-8 text-sm leading-relaxed">
-            Drag and drop high-res images, ZIP folders, or directly import from your Google Drive folder.
-          </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <label className="group relative">
-              <input type="file" multiple accept="image/*,.zip" onChange={onFileInput} className="hidden" />
-              <div className="flex items-center gap-2 bg-foreground text-background hover:bg-foreground/90 px-6 py-3 rounded-full font-bold text-xs uppercase tracking-widest cursor-pointer transition-all hover:shadow-lg active:scale-95">
-                <FolderUp className="h-4 w-4" />
-                Select Files / ZIP
+              <div className="relative mb-8">
+                <div className="absolute inset-0 bg-primary/20 blur-[60px] rounded-full" />
+                <div className="relative h-24 w-24 rounded-3xl bg-white dark:bg-white/[0.05] border border-black/5 dark:border-white/10 shadow-xl flex items-center justify-center group">
+                  <Cloud className="h-10 w-10 text-primary transition-transform duration-500 group-hover:scale-110" />
+                </div>
               </div>
-            </label>
-            
-            <button 
-              onClick={() => setShowDriveInput(!showDriveInput)}
-              className="flex items-center gap-2 bg-secondary/80 hover:bg-secondary text-foreground px-6 py-3 rounded-full font-bold text-xs uppercase tracking-widest transition-all active:scale-95 border border-border/50 hover:border-violet-500/30"
-            >
-              <Globe className="h-4 w-4 text-violet-400" />
-              Google Drive
-            </button>
-          </div>
-
-          <AnimatePresence>
-            {showDriveInput && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="w-full max-w-md mt-6 overflow-hidden"
-              >
-                <form onSubmit={handleDriveSubmit}>
-                  <div className={`flex items-center gap-2 bg-secondary/30 backdrop-blur-sm border rounded-2xl p-1.5 transition-all focus-within:ring-2 focus-within:ring-violet-500/20 ${
-                    driveError ? "border-rose-500/50" : "border-border/50 focus-within:border-violet-500/40"
-                  }`}>
-                    <div className="pl-3">
-                      {driveLoading 
-                        ? <div className="h-4 w-4 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
-                        : <LinkIcon className="h-4 w-4 text-violet-400" />
-                      }
-                    </div>
-                    <input 
-                      type="url" 
-                      placeholder="Paste Google Drive link..." 
-                      value={driveUrl}
-                      onChange={(e) => { setDriveUrl(e.target.value); setDriveError(null) }}
-                      className="flex-1 bg-transparent border-none focus:ring-0 text-xs py-2 px-2 text-foreground placeholder:text-muted-foreground/60 font-medium"
-                      required
-                      disabled={driveLoading}
-                    />
-                    <button 
-                      type="submit" 
-                      disabled={driveLoading || !driveUrl}
-                      className="bg-violet-600 hover:bg-violet-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      {driveLoading ? "Importing..." : "Import"}
-                    </button>
-                  </div>
-                </form>
-                {driveError && (
-                  <p className="mt-2 text-xs text-rose-400 text-left px-2 font-medium">
-                    ⚠ {driveError}
-                  </p>
-                )}
-                <p className="mt-2 text-[10px] text-muted-foreground/50 text-left px-2 leading-relaxed">
-                  The folder/file must be set to &ldquo;Anyone with the link can view&rdquo; in Google Drive.
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          
-          <div className="mt-10 flex items-center gap-6 text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/50">
-            <span className="flex items-center gap-1.5"><Cloud className="h-3.5 w-3.5 text-violet-400" /> Auto-sync</span>
-            <span className="flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 text-amber-400" /> Fast processing</span>
-            <span className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-sky-400 animate-pulse" /> AI Analysis</span>
-          </div>
-        </div>
-      </div>
-
-      <AnimatePresence mode="popLayout">
-        {items.length > 0 && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-4"
-          >
-            <div className="flex items-center justify-between px-2">
-              <div className="flex items-center gap-3">
-                <h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  Queue <span className="h-5 w-5 rounded-full bg-secondary text-[10px] flex items-center justify-center text-foreground">{items.length}</span>
-                </h4>
-                {/* Status badges */}
-                {uploadedCount > 0 && (
-                  <span className="text-[10px] font-bold bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                    {uploadedCount} ready
-                  </span>
-                )}
-                {processingCount > 0 && (
-                  <span className="text-[10px] font-bold bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20 animate-pulse">
-                    {processingCount} generating
-                  </span>
-                )}
-                {doneCount > 0 && (
-                  <span className="text-[10px] font-bold bg-violet-500/10 text-violet-400 px-2 py-0.5 rounded-full border border-violet-500/20">
-                    {doneCount} done
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                {doneCount > 0 && (
-                  <a
-                    href="/gallery"
-                    className="flex items-center gap-1.5 bg-secondary text-secondary-foreground px-4 py-2 rounded-full text-xs font-bold transition-all hover:bg-secondary/80 border border-border/50"
-                  >
-                    View Gallery →
-                  </a>
-                )}
-                {uploadedCount > 0 && (
-                  <button
-                    onClick={() => {
-                      setCustomPrompt(getCompiledPrompt())
-                      setShowPromptPreview(true)
-                    }}
-                    disabled={processingCount > 0}
-                    className="flex items-center gap-1.5 bg-secondary hover:bg-secondary/80 text-foreground px-4 py-2 rounded-full text-xs font-bold transition-all border border-border/50 active:scale-95 disabled:opacity-50"
-                  >
-                    <Eye className="h-3.5 w-3.5" /> Prompt Preview
-                  </button>
-                )}
+              <h3 className="text-2xl font-bold mb-3">Upload your garments</h3>
+              <p className="text-muted-foreground/60 mb-8 leading-relaxed">
+                Drop your flat-lay or mannequin shots here. <br />
+                We&apos;ll transform them into professional editorial photography.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 w-full">
+                <label className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 bg-primary text-primary-foreground rounded-2xl font-semibold cursor-pointer hover:opacity-90 transition-all active:scale-95 shadow-glow">
+                  <Upload className="h-4 w-4" />
+                  Select Files
+                  <input type="file" className="hidden" multiple accept="image/*,.zip" onChange={(e) => e.target.files && processFiles(Array.from(e.target.files))} />
+                </label>
                 <button 
-                  onClick={handleStartGenerationClick}
-                  disabled={uploadedCount === 0 || processingCount > 0 || refiningPrompt}
-                  className="group flex items-center gap-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2 rounded-full text-sm font-bold transition-all shadow-lg shadow-violet-500/20 active:scale-95"
+                  onClick={() => setShowDriveInput(true)}
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 bg-white dark:bg-white/[0.05] border border-black/5 dark:border-white/10 rounded-2xl font-semibold hover:bg-slate-50 dark:hover:bg-white/[0.08] transition-all active:scale-95"
                 >
-                  {processingCount > 0 ? (
-                    <>
-                      <div className="h-3 w-3 rounded-full border border-white border-t-transparent animate-spin" />
-                      Generating {outputsRequested} per outfit...
-                    </>
-                  ) : refiningPrompt ? (
-                    <>
-                      <div className="h-3 w-3 rounded-full border border-white border-t-transparent animate-spin" />
-                      AI Refinement Layer...
-                    </>
-                  ) : (
-                    <>
-                      Start Generation ({outputsRequested} per outfit)
-                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </>
-                  )}
+                  <Globe className="h-4 w-4" />
+                  Import from URL
                 </button>
               </div>
+            </motion.div>
+          ) : (
+            <div className="w-full h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 overflow-y-auto p-4 custom-scrollbar">
+              <AnimatePresence mode="popLayout">
+                {items.map((item) => (
+                  <UploadCard key={item.id} item={item} onRemove={() => removeItem(item.id)} />
+                ))}
+              </AnimatePresence>
+              
+              {/* Add More Card */}
+              <label className="aspect-[3/4] rounded-3xl border-2 border-dashed border-black/5 dark:border-white/5 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-black/[0.01] dark:hover:bg-white/[0.01] hover:border-primary/20 transition-all group">
+                <div className="h-12 w-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary transition-transform group-hover:scale-110">
+                  <Plus className="h-6 w-6" />
+                </div>
+                <span className="text-sm font-medium text-muted-foreground/60">Add more</span>
+                <input type="file" className="hidden" multiple accept="image/*,.zip" onChange={(e) => e.target.files && processFiles(Array.from(e.target.files))} />
+              </label>
             </div>
-            
-            <div className="grid grid-cols-1 gap-3">
-              {items.map((it) => (
-                <UploadCard key={it.id} item={it} onRemove={() => removeItem(it.id)} />
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Footer Controls */}
+      <div className="flex items-center justify-between p-2">
+        <div className="flex items-center gap-4">
+          <div className="px-4 py-2 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 flex items-center gap-3">
+            <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
+            <span className="text-[12px] font-medium text-muted-foreground/80">Ready for generation</span>
+          </div>
+          <div className="text-[12px] text-muted-foreground/40 font-mono">
+            {items.length} assets selected
+          </div>
+        </div>
+
+        <button 
+          onClick={handleStartGenerationClick}
+          disabled={items.length === 0 || refiningPrompt}
+          className="group flex items-center gap-3 px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-bold shadow-glow-primary hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
+        >
+          {refiningPrompt ? (
+            <>
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Optimizing Pipeline...
+            </>
+          ) : (
+            <>
+              Generate Creative Content
+              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </>
+          )}
+        </button>
+      </div>
 
       {/* Advanced Prompt Preview & Editable Layer Modal */}
       <AnimatePresence>
         {showPromptPreview && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-[#070811]/90 backdrop-blur-xl">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-3xl rounded-[2.5rem] border border-border/50 bg-[#0c0a14] p-8 shadow-2xl shadow-violet-500/5 overflow-hidden max-h-[90vh] flex flex-col"
+              initial={{ opacity: 0, scale: 0.98, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.98, y: 10 }}
+              className="relative w-full max-w-4xl rounded-[2.5rem] border border-white/5 bg-[#0B0D16] p-10 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
             >
-              {/* Decorative radial glow */}
-              <div className="absolute top-[-20%] left-[-20%] w-[50%] h-[50%] bg-violet-600/10 rounded-full blur-[80px] pointer-events-none" />
+              {/* Decorative subtle ambient lighting */}
+              <div className="absolute top-[-30%] left-[-30%] w-[60%] h-[60%] bg-[#7C5CFF]/10 rounded-full blur-[120px] pointer-events-none" />
               
               {/* Header */}
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-border/40 relative z-10">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-violet-500/10 flex items-center justify-center border border-violet-500/20">
-                    <FileText className="h-5 w-5 text-violet-400" />
+              <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/5 relative z-10">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-2xl bg-[#7C5CFF]/10 flex items-center justify-center border border-[#7C5CFF]/20">
+                    <FileText className="h-6 w-6 text-[#7C5CFF]" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold tracking-tight">✨ Confirm AI Enhanced Prompt</h2>
-                    <p className="text-xs text-muted-foreground">The hybrid AI creative layer has refined your prompt. Review and tweak before confirming generation!</p>
+                    <h2 className="text-2xl font-bold tracking-tight text-foreground">Orchestration Logic</h2>
+                    <p className="text-[13px] text-muted-foreground/60 mt-1">Review the synthesized AI instructions before campaign execution.</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowPromptPreview(false)}
-                  className="p-2 hover:bg-secondary rounded-full transition-colors"
+                  className="p-2.5 hover:bg-white/5 rounded-xl transition-all duration-300 text-muted-foreground/40 hover:text-foreground"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-5 w-5" />
                 </button>
               </div>
 
               {/* Editable Area */}
-              <div className="flex-1 overflow-y-auto mb-6 relative z-10 space-y-4 pr-2">
-                <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 text-xs text-amber-300 leading-relaxed">
-                  💡 <strong>Expert tip:</strong> The prompt uses the <strong>5-block system</strong> to preserve garments exactly. You can fine-tune instructions here. Do not remove the <code>[OUTFIT PRESERVATION]</code> section if you wish to maintain garment accuracy.
+              <div className="flex-1 overflow-y-auto mb-8 relative z-10 space-y-6 pr-2 custom-scrollbar">
+                <div className="bg-[#38BDF8]/5 border border-[#38BDF8]/10 rounded-2xl p-5 text-[13px] text-[#38BDF8]/80 leading-relaxed font-medium">
+                  💡 <strong>Synthesis Protocol:</strong> The orchestrator uses a <strong>5-layer logic system</strong> to ensure pixel-perfect garment fidelity. Avoid modifying the <code>[OUTFIT PRESERVATION]</code> block for technical accuracy.
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Active Compiled Prompt</label>
+                <div className="space-y-3">
+                  <label className="text-[11px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em] px-1">Active Synthesis Logic</label>
                   <textarea
                     value={customPrompt}
                     onChange={(e) => setCustomPrompt(e.target.value)}
-                    className="w-full min-h-[350px] p-5 bg-card/40 border border-border/50 rounded-3xl text-sm font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-violet-500/30 text-foreground resize-none"
-                    placeholder="Enter custom prompt instructions..."
+                    className="w-full min-h-[400px] p-6 bg-white/[0.02] border border-white/5 rounded-[2rem] text-[13.5px] font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#7C5CFF]/10 text-foreground/90 resize-none transition-all"
+                    placeholder="Enter custom orchestration instructions..."
                   />
                 </div>
               </div>
@@ -662,6 +559,90 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
                   </button>
                 </div>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Google Drive Import Modal */}
+      <AnimatePresence>
+        {showDriveInput && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-background/80 dark:bg-[#070811]/90 backdrop-blur-xl">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.98, y: 10 }}
+              className="relative w-full max-w-lg rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-white dark:bg-[#0B0D16] p-10 shadow-2xl overflow-hidden"
+            >
+              <div className="absolute top-[-30%] left-[-30%] w-[60%] h-[60%] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
+              
+              <div className="flex items-center justify-between mb-8 pb-6 border-b border-black/5 dark:border-white/5 relative z-10">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                    <Globe className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold tracking-tight text-foreground">Cloud Import</h2>
+                    <p className="text-[13px] text-muted-foreground/60 mt-1">Connect your Google Drive assets.</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowDriveInput(false)}
+                  className="p-2.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl transition-all duration-300 text-muted-foreground/40 hover:text-foreground"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleDriveSubmit} className="space-y-6 relative z-10">
+                <div className="space-y-3">
+                  <label className="text-[11px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em] px-1">Drive Folder URL</label>
+                  <input
+                    type="url"
+                    required
+                    value={driveUrl}
+                    onChange={(e) => setDriveUrl(e.target.value)}
+                    placeholder="https://drive.google.com/drive/folders/..."
+                    className="w-full p-4 bg-slate-50 dark:bg-white/[0.02] border border-black/5 dark:border-white/5 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 text-foreground transition-all"
+                  />
+                  <p className="text-[11px] text-muted-foreground/50 leading-relaxed px-1">
+                    Ensure the folder is set to <strong>&quot;Anyone with the link&quot;</strong> to allow the AI orchestrator to access assets.
+                  </p>
+                </div>
+
+                {driveError && (
+                  <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-[12px] text-rose-500 font-medium">
+                    {driveError}
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowDriveInput(false)}
+                    className="flex-1 py-4 rounded-2xl text-sm font-bold border border-black/5 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={driveLoading || !driveUrl}
+                    className="flex-[2] py-4 bg-primary text-primary-foreground rounded-2xl text-sm font-bold shadow-glow hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {driveLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Synchronizing...
+                      </>
+                    ) : (
+                      <>
+                        <Cloud className="h-4 w-4" />
+                        Import Assets
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </div>
         )}
