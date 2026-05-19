@@ -24,9 +24,9 @@ const stats = [
 ]
 
 const recentJobs = [
-  { id: "JOB-921", outfit: "Linen Summer Dress", status: "Completed", date: "2 mins ago", thumbnail: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=100&h=100&fit=crop" },
-  { id: "JOB-920", outfit: "Classic White Tee", status: "Processing", date: "5 mins ago", thumbnail: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=100&h=100&fit=crop" },
-  { id: "JOB-919", outfit: "Slim Fit Chinos", status: "Queued", date: "12 mins ago", thumbnail: "https://images.unsplash.com/photo-1473963456453-28956b6b7771?w=100&h=100&fit=crop" },
+  { id: "JOB-921", dbId: "dummy-1", outfit: "Linen Summer Dress", status: "Completed", date: "2 mins ago", thumbnail: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=100&h=100&fit=crop" },
+  { id: "JOB-920", dbId: "dummy-2", outfit: "Classic White Tee", status: "Processing", date: "5 mins ago", thumbnail: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=100&h=100&fit=crop" },
+  { id: "JOB-919", dbId: "dummy-3", outfit: "Slim Fit Chinos", status: "Queued", date: "12 mins ago", thumbnail: "https://images.unsplash.com/photo-1473963456453-28956b6b7771?w=100&h=100&fit=crop" },
 ]
 
 export default function DashboardPage() {
@@ -123,7 +123,7 @@ export default function DashboardPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              // @ts-ignore
+              // @ts-expect-error - Framer Motion component type discrepancy in strict typescript environment
               className="group relative p-6 rounded-[2rem] border border-border/50 bg-card/30 backdrop-blur-sm hover:bg-card/50 transition-all"
             >
               <div className={`h-12 w-12 rounded-2xl ${stat.bg} flex items-center justify-center mb-4 transition-transform group-hover:scale-110`}>

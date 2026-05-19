@@ -9,13 +9,13 @@ export async function GET() {
       include: {
         job: {
           include: {
-            outfit: true
-          }
-        }
-      }
+            outfit: true,
+          },
+        },
+      },
     })
 
-    // Filter out any records where outfit or job is missing (orphaned records)
+    // Filter out orphaned records
     const validImages = generatedImages.filter(img => img.job && img.job.outfit)
 
     const transformedItems = validImages.map(img => ({
@@ -24,6 +24,11 @@ export async function GET() {
       category: img.job.outfit.category || 'Collection',
       original: img.job.outfit.imageUrl,
       generated: img.imageUrl,
+      // Grouping fields
+      outfitId: img.job.outfit.id,
+      outfitName: img.job.outfit.sku || img.job.outfit.category || 'Outfit',
+      jobId: img.jobId,
+      createdAt: img.createdAt,
     }))
 
     return NextResponse.json(transformedItems)

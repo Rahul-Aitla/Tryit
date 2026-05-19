@@ -19,12 +19,12 @@ export default function Header() {
       <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 shadow-lg shadow-violet-500/20 flex items-center justify-center text-white font-bold transition-transform group-hover:scale-105">
-              AR
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-violet-600 via-indigo-600 to-sky-500 shadow-[0_0_20px_rgba(124,58,237,0.3)] flex items-center justify-center text-white font-extrabold tracking-tighter text-base transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_0_25px_rgba(124,58,237,0.5)]">
+              DC
             </div>
             <div className="hidden sm:block">
-              <div className="text-sm font-bold tracking-tight text-foreground">AI OUTFIT</div>
-              <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Studio Pro</div>
+              <div className="text-sm font-extrabold tracking-wider text-foreground font-display uppercase">DIGICHEFS</div>
+              <div className="text-[9px] uppercase tracking-[0.25em] text-violet-400 font-bold">Outfit Studio</div>
             </div>
           </Link>
 

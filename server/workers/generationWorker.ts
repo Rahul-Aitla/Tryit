@@ -7,7 +7,7 @@ export const setupWorker = () => {
   const worker = new Worker(
     'generation-queue',
     async (job) => {
-      const { jobId, outfitId, prompt, outputsRequested } = job.data
+      const { jobId, outfitId, prompt, outputsRequested, referenceSelections } = job.data
 
       console.log(`[Worker] Processing Job ${jobId} for Outfit ${outfitId} (${outputsRequested} outputs)`)
 
@@ -30,10 +30,12 @@ export const setupWorker = () => {
       if (!outfit) throw new Error('Outfit not found in database')
 
       const references = {
-        lighting: outfit.project.references.find(r => r.referenceType === 'lighting')?.imageUrl,
-        pose: outfit.project.references.find(r => r.referenceType === 'pose')?.imageUrl,
-        background: outfit.project.references.find(r => r.referenceType === 'background')?.imageUrl,
+        lighting:  outfit.project.references.find(r => r.referenceType === 'lighting')?.imageUrl,
+        pose:      outfit.project.references.find(r => r.referenceType === 'pose')?.imageUrl,
+        background:outfit.project.references.find(r => r.referenceType === 'background')?.imageUrl,
         modelType: outfit.project.references.find(r => r.referenceType === 'model')?.imageUrl,
+        camera:    outfit.project.references.find(r => r.referenceType === 'camera')?.imageUrl,
+        vibe:      outfit.project.references.find(r => r.referenceType === 'vibe')?.imageUrl,
       }
 
       // 3. Call Nano Banana (Gemini) AI
@@ -41,7 +43,8 @@ export const setupWorker = () => {
         outfitImageUrl: outfit.imageUrl,
         creativeDirection: prompt,
         outputsRequested,
-        references
+        references,
+        referenceSelections: referenceSelections || {}
       })
 
       if (!results || results.length === 0) {

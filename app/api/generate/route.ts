@@ -21,7 +21,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { outfitId, prompt, outputsRequested } = await request.json()
+    const { outfitId, prompt, outputsRequested, referenceSelections } = await request.json()
     
     // 1. Create a job record in the database
     const jobRecord = await prisma.generationJob.create({
@@ -38,7 +38,8 @@ export async function POST(request: Request) {
       jobId: jobRecord.id,
       outfitId,
       prompt,
-      outputsRequested: outputsRequested || 1
+      outputsRequested: outputsRequested || 1,
+      referenceSelections: referenceSelections || {},
     })
     
     // 3. Update outfit status
