@@ -136,18 +136,19 @@ export default function GalleryPage() {
 
   const handleDownload = useCallback(async (url: string, filename: string) => {
     try {
-      const response = await fetch(url)
-      const blob = await response.blob()
-      const blobUrl = window.URL.createObjectURL(blob)
+      // Use proxy API to avoid CORS issues and force direct download
+      const proxyUrl = `/api/download?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`
+      
       const link = document.createElement("a")
-      link.href = blobUrl
-      link.download = filename
+      link.href = proxyUrl
+      link.setAttribute("download", filename)
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      window.URL.revokeObjectURL(blobUrl)
     } catch (err) {
       console.error("Download failed:", err)
+      // Fallback: Open in new tab if proxy fails
+      window.open(url, "_blank")
     }
   }, [])
 
@@ -531,46 +532,62 @@ function ImageComparisonOverlay({
         </button>
 
         {/* Comparison Section */}
-        <div className="flex-1 relative bg-slate-50 dark:bg-black overflow-hidden group">
-          <div className="absolute inset-0 select-none pointer-events-none">
-            {/* Original Image */}
-            <Image src={item.original} alt="Original" fill className="object-contain" />
+        <div className="flex-1 relative bg-slate-50 dark:bg-black overflow-hidden group flex items-center justify-center">
+          <div className="relative w-full h-full select-none">
+            {/* Original Image (Background) */}
+            <div className="absolute inset-0">
+              <Image 
+                src={item.original} 
+                alt="Original" 
+                fill 
+                className="object-contain" 
+                priority
+              />
+            </div>
 
-            {/* Generated Image Overlay */}
+            {/* Generated Image (Foreground with Clip) */}
             <div
-              className="absolute inset-0 overflow-hidden border-r border-white/50"
-              style={{ width: `${sliderVal}%` }}
+              className="absolute inset-0 z-10 overflow-hidden"
+              style={{ clipPath: `inset(0 ${100 - sliderVal}% 0 0)` }}
             >
-              <div className="absolute inset-0 w-[100vw] h-full">
-                <Image src={item.generated} alt="Generated" fill className="object-contain" />
+              <Image 
+                src={item.generated} 
+                alt="Generated" 
+                fill 
+                className="object-contain" 
+                priority
+              />
+            </div>
+
+            {/* Handle UI (Visual only) */}
+            <div
+              className="absolute top-0 bottom-0 pointer-events-none z-20"
+              style={{ left: `${sliderVal}%` }}
+            >
+              <div className="h-full w-[2px] bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)]" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white text-black shadow-2xl flex items-center justify-center border-4 border-primary/20 scale-110">
+                <ArrowRightLeft className="h-5 w-5" />
               </div>
             </div>
           </div>
 
-          {/* Slider Control */}
+          {/* Slider Control (Actual Interaction) */}
           <input
             type="range"
             min="0"
             max="100"
+            step="0.1"
             value={sliderVal}
-            onChange={(e) => setSliderVal(parseInt(e.target.value))}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-10"
+            onChange={(e) => setSliderVal(parseFloat(e.target.value))}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30"
           />
 
-          <div
-            className="absolute top-0 bottom-0 pointer-events-none z-10"
-            style={{ left: `${sliderVal}%` }}
-          >
-            <div className="h-full w-[2px] bg-white shadow-lg" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white text-black shadow-2xl flex items-center justify-center">
-              <ArrowRightLeft className="h-4 w-4" />
-            </div>
-          </div>
-
           {/* Labels */}
-          <div className="absolute top-8 left-8 flex gap-3 pointer-events-none z-10">
-            <span className="bg-black/20 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-[0.2em] px-4 py-2 rounded-full border border-white/10">Source Garment</span>
-            <span className="bg-primary/80 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-[0.2em] px-4 py-2 rounded-full border border-primary/20">AI Synthesis</span>
+          <div className="absolute top-8 left-8 flex gap-3 pointer-events-none z-40">
+            <div className="flex flex-col gap-2">
+              <span className="bg-black/40 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-[0.2em] px-4 py-2 rounded-full border border-white/10 shadow-lg inline-block">Source Garment</span>
+              <span className="bg-primary/80 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-[0.2em] px-4 py-2 rounded-full border border-primary/20 shadow-lg inline-block">AI Synthesis</span>
+            </div>
           </div>
         </div>
 
