@@ -22,9 +22,9 @@ export default function UploadPage() {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-12"
         >
-          <div className="flex items-center justify-between">
+          <div className="mb-12">
+            <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5 text-[#7C5CFF] font-medium text-[11px] uppercase tracking-[0.3em] mb-4 opacity-90">
               <Sparkles className="h-3.5 w-3.5" />
               Creative Operations Platform
@@ -55,6 +55,7 @@ export default function UploadPage() {
           <p className="text-muted-foreground/80 max-w-2xl text-[15px] md:text-[17px] font-normal leading-relaxed">
             Ingest garment assets, orchestrate high-fashion aesthetics, and generate photorealistic creative operations in seconds.
           </p>
+          </div>
         </motion.div>
 
         {/* Workflow Stepper Navigation Guide — Ultra Subtle 2026 Style */}
@@ -62,8 +63,8 @@ export default function UploadPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mb-16 p-1.5 bg-white/[0.02] border border-white/5 rounded-2xl max-w-5xl mx-auto flex items-center justify-between text-[11px] font-semibold text-muted-foreground/50"
         >
+          <div className="mb-16 p-1.5 bg-white/[0.02] border border-white/5 rounded-2xl max-w-5xl mx-auto flex items-center justify-between text-[11px] font-semibold text-muted-foreground/50">
           {[
             { step: "01", label: "Asset Ingestion", active: true },
             { step: "02", label: "Creative Direction", active: false },
@@ -87,6 +88,7 @@ export default function UploadPage() {
               {idx < 4 && <div className="h-px w-8 bg-white/5 mx-auto hidden md:inline ml-4" />}
             </div>
           ))}
+          </div>
         </motion.div>
 
         {/* Dynamic Grid Layout */}
@@ -100,13 +102,14 @@ export default function UploadPage() {
                 animate={{ width: "auto", opacity: 1, scale: 1 }}
                 exit={{ width: 0, opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.25, ease: "easeInOut" }}
-                className="col-span-12 lg:col-span-3 hidden lg:block sticky top-24 overflow-hidden"
               >
+                <div className="col-span-12 lg:col-span-3 hidden lg:block sticky top-24 overflow-hidden">
                 <div className="w-[280px]">
                   <LeftSidebar 
                     currentProjectId={projectId} 
                     onSelectProject={setProjectId} 
                   />
+                </div>
                 </div>
               </motion.aside>
             )}

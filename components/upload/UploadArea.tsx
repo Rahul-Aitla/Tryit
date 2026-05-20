@@ -333,12 +333,11 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
             
             setItems((s) => s.map((x) => {
               if (x.id === it.id) {
-                const newStatus = statusData.status.toLowerCase() as FileEntry["status"]
                 // Map API status to UI status
                 let uiStatus: FileEntry["status"] = "processing"
-                if (newStatus === "completed") uiStatus = "done"
-                if (newStatus === "failed") uiStatus = "error"
-                if (newStatus === "queued") uiStatus = "queued"
+                if (statusData.status === "completed") uiStatus = "done"
+                if (statusData.status === "failed") uiStatus = "error"
+                if (statusData.status === "queued") uiStatus = "queued"
                 
                 return { 
                   ...x, 
@@ -429,8 +428,8 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center text-center max-w-md"
             >
+              <div className="flex flex-col items-center text-center max-w-md">
               <div className="relative mb-8">
                 <div className="absolute inset-0 bg-primary/20 blur-[60px] rounded-full" />
                 <div className="relative h-24 w-24 rounded-3xl bg-white dark:bg-white/[0.05] border border-black/5 dark:border-white/10 shadow-xl flex items-center justify-center group">
@@ -457,9 +456,10 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
                   Import from URL
                 </button>
               </div>
-            </motion.div>
-          ) : (
-            <div className="w-full h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 overflow-y-auto p-4 custom-scrollbar">
+                </div>
+              </motion.div>
+            ) : (
+              <div className="w-full h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 overflow-y-auto p-4 custom-scrollbar">
               <AnimatePresence mode="popLayout">
                 {items.map((item) => (
                   <UploadCard key={item.id} item={item} onRemove={() => removeItem(item.id)} />
@@ -518,8 +518,8 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
               initial={{ opacity: 0, scale: 0.98, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98, y: 10 }}
-              className="relative w-full max-w-4xl rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-white dark:bg-[#0B0D16] p-10 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
             >
+              <div className="relative w-full max-w-4xl rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-white dark:bg-[#0B0D16] p-10 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
               {/* Decorative subtle ambient lighting */}
               <div className="absolute top-[-30%] left-[-30%] w-[60%] h-[60%] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
               
@@ -588,6 +588,7 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
                   </button>
                 </div>
               </div>
+              </div>
             </motion.div>
           </div>
         )}
@@ -601,8 +602,8 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
               initial={{ opacity: 0, scale: 0.98, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98, y: 10 }}
-              className="relative w-full max-w-lg rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-white dark:bg-[#0B0D16] p-10 shadow-2xl overflow-hidden"
             >
+              <div className="relative w-full max-w-lg rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-white dark:bg-[#0B0D16] p-10 shadow-2xl overflow-hidden">
               <div className="absolute top-[-30%] left-[-30%] w-[60%] h-[60%] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
               
               <div className="flex items-center justify-between mb-8 pb-6 border-b border-black/5 dark:border-white/5 relative z-10">
@@ -672,6 +673,7 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
                   </button>
                 </div>
               </form>
+              </div>
             </motion.div>
           </div>
         )}
@@ -684,8 +686,8 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[60] min-w-[320px]"
           >
+            <div className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[60] min-w-[320px]">
             <div className="bg-white dark:bg-[#0B0D16] border border-emerald-500/20 rounded-3xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.4)] backdrop-blur-2xl relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/0 via-emerald-500/50 to-emerald-500/0" />
               
@@ -715,6 +717,7 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
                   </div>
                 </div>
               </div>
+            </div>
             </div>
           </motion.div>
         )}

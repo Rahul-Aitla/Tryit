@@ -50,7 +50,8 @@ export default function UploadCard({ item, onRemove }: UploadCardProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className={`group relative flex flex-col rounded-[2rem] overflow-hidden border transition-all duration-500 bg-white dark:bg-white/[0.02] ${
+    >
+      <div className={`group relative flex flex-col rounded-[2rem] overflow-hidden border transition-all duration-500 bg-white dark:bg-white/[0.02] ${
         isDone 
           ? "border-emerald-500/20 shadow-[0_10px_40px_rgba(16,185,129,0.06)]"
           : isError
@@ -60,8 +61,7 @@ export default function UploadCard({ item, onRemove }: UploadCardProps) {
           : isProcessing
           ? "border-primary shadow-glow-primary"
           : "border-black/5 dark:border-white/5 shadow-soft hover:shadow-elevated hover:border-black/10 dark:hover:border-white/10"
-      }`}
-    >
+      }`}>
       {/* Thumbnail */}
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100 dark:bg-white/[0.03]">
         <Image
@@ -141,14 +141,15 @@ export default function UploadCard({ item, onRemove }: UploadCardProps) {
               initial={{ width: 0 }}
               animate={{ width: `${item.progress}%` }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className={`h-full rounded-full ${
+            >
+              <div className={`h-full rounded-full ${
                 isError 
                   ? "bg-rose-500" 
                   : isDone 
                   ? "bg-emerald-500"
                   : "bg-primary"
-              }`}
-            />
+              }`} />
+            </motion.div>
           </div>
         )}
 
@@ -168,6 +169,7 @@ export default function UploadCard({ item, onRemove }: UploadCardProps) {
             </span>
           )}
         </div>
+      </div>
       </div>
     </motion.div>
   )

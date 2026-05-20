@@ -49,9 +49,10 @@ export default function Header() {
                   {isActive && (
                     <motion.div
                       layoutId="active-nav"
-                      className="absolute inset-0 bg-primary/5 border border-primary/10 rounded-full -z-10 shadow-sm"
                       transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                    />
+                    >
+                      <div className="absolute inset-0 bg-primary/5 border border-primary/10 rounded-full -z-10 shadow-sm" />
+                    </motion.div>
                   )}
                 </Link>
               )
