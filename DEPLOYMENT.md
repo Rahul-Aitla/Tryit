@@ -17,7 +17,8 @@ This guide explains how to deploy the **Tryit** platform to production.
 2. **Build Settings**:
    - Framework Preset: `Next.js`
    - Build Command: `npm run build` (This automatically runs `prisma generate`).
-3. **Environment Variables**: Add all keys from your `.env` to Vercel's Environment Variables settings.
+3. **Environment Variables**: Add all keys from your `.env` to Vercel's Environment Variables settings in the Dashboard (Project Settings > Environment Variables).
+   - *Note*: Do not add secrets to `vercel.json`. Always use the Dashboard for security.
 
 ---
 
