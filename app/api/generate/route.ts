@@ -48,9 +48,24 @@ export async function POST(request: Request) {
       data: { uploadStatus: 'Processing' }
     })
     
+    // 4. Trigger GitHub Actions worker immediately (no-wait trigger)
+    // This ensures jobs start processing ASAP instead of waiting for schedule
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/worker/trigger`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      }).catch(() => {
+        // Silent fail - worker will run on schedule anyway
+        console.log('ℹ️  On-demand worker trigger skipped (will run on schedule)')
+      })
+    } catch (e) {
+      console.log('ℹ️  Could not trigger on-demand worker')
+    }
+    
     return NextResponse.json({ 
       message: 'Generation job queued', 
-      jobId: jobRecord.id 
+      jobId: jobRecord.id,
+      processingStartsIn: 'immediately (via on-demand trigger) or within 3 minutes (scheduled)'
     })
   } catch (error) {
     console.error('Queue Error:', error)

@@ -2,14 +2,19 @@ name: AI Generation Worker
 
 on:
   schedule:
-    # Run every 10 minutes
-    - cron: '*/10 * * * *'
+    # Run every 3 minutes for better coverage
+    - cron: '*/3 * * * *'
+  
+  # Trigger on-demand when job is queued
+  repository_dispatch:
+    types: [start-worker]
+  
   workflow_dispatch: # Manual trigger
 
 jobs:
   worker:
     runs-on: ubuntu-latest
-    timeout-minutes: 9  # Keep under 10 minutes for safety
+    timeout-minutes: 9
     
     steps:
       - name: Checkout code
@@ -46,11 +51,8 @@ jobs:
           NANO_BANANA_API_KEY: ${{ secrets.NANO_BANANA_API_KEY }}
         
         run: |
-          # Run worker for 8 minutes (480 seconds), then kill it gracefully
-          # This ensures cleanup happens within GitHub Actions timeout
           timeout 480 npm run worker:start || exit_code=$?
           
-          # exit_code 124 means timeout (which is expected)
           if [ "${exit_code:-0}" -eq 124 ]; then
             echo "✅ Worker timeout reached (expected after 8 minutes)"
             exit 0
