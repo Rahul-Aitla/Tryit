@@ -25,10 +25,10 @@ export default function Header() {
               className="h-9 w-9 rounded-xl shadow-glow-primary flex items-center justify-center text-white font-bold tracking-tighter text-sm transition-all duration-500 group-hover:scale-105 group-hover:rotate-3"
               style={{ background: 'var(--primary-gradient)' }}
             >
-              DC
+              T
             </div>
             <div className="hidden sm:block">
-              <div className="text-[15px] font-bold tracking-tight text-foreground font-display">DigiChefs</div>
+              <div className="text-[15px] font-bold tracking-tight text-foreground font-display">Tryit</div>
               <div className="text-[10px] tracking-widest text-primary font-medium uppercase opacity-80">Creative Ops Platform</div>
             </div>
           </Link>

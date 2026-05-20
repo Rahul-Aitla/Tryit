@@ -52,6 +52,7 @@ model GenerationJob {
   outfit           Outfit   @relation(fields: [outfitId], references: [id])
   prompt           String
   status           String
+  progress         Int      @default(0)
   retryCount       Int      @default(0)
   outputsRequested Int
   failedReason     String?

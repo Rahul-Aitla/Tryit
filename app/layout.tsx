@@ -34,12 +34,12 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DigiChefs — AI Outfit Studio",
+  title: "Tryit — AI Outfit Studio",
   description:
     "Transform flat-lay and mannequin shots into professional editorial photography with AI. Upload garments, set references, generate in seconds.",
   keywords: ["AI fashion", "outfit generation", "editorial photography", "AI model"],
   openGraph: {
-    title: "DigiChefs — AI Outfit Studio",
+    title: "Tryit — AI Outfit Studio",
     description: "AI-powered fashion image generation for e-commerce brands.",
     type: "website",
   },

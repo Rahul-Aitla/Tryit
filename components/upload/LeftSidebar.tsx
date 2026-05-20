@@ -20,6 +20,12 @@ export default function LeftSidebar({ currentProjectId, onSelectProject }: LeftS
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
+  const [refCounts, setRefCounts] = useState<Record<string, number>>({
+    Atmosphere: 12,
+    Choreography: 6,
+    Personas: 6,
+    Aesthetics: 12
+  })
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -36,7 +42,38 @@ export default function LeftSidebar({ currentProjectId, onSelectProject }: LeftS
       }
     }
     fetchProjects()
+    const interval = setInterval(fetchProjects, 15000)
+    return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    if (!currentProjectId) return
+
+    const fetchRefCounts = async () => {
+      try {
+        const res = await fetch(`/api/references?projectId=${currentProjectId}`)
+        if (res.ok) {
+          const data = await res.json()
+          const uploads = data as { referenceType: string }[]
+          
+          const counts = {
+            Atmosphere: 12 + uploads.filter(r => r.referenceType === "lighting" || r.referenceType === "background").length,
+            Choreography: 6 + uploads.filter(r => r.referenceType === "pose").length,
+            Personas: 6 + uploads.filter(r => r.referenceType === "model").length,
+            Aesthetics: 12 + uploads.filter(r => r.referenceType === "vibe" || r.referenceType === "camera").length
+          }
+          setRefCounts(counts)
+        }
+      } catch (err) {
+        console.error("Failed to fetch ref counts:", err)
+      }
+    }
+
+    fetchRefCounts()
+    // Poll for changes every 10 seconds to keep it "real-time"
+    const interval = setInterval(fetchRefCounts, 10000)
+    return () => clearInterval(interval)
+  }, [currentProjectId])
 
   const handleCreateProject = async () => {
     setCreating(true)
@@ -115,10 +152,10 @@ export default function LeftSidebar({ currentProjectId, onSelectProject }: LeftS
         </div>
         
         <div className="grid grid-cols-2 gap-2.5">
-          {["Atmosphere", "Choreography", "Personas", "Aesthetics"].map((cat) => (
+          {Object.entries(refCounts).map(([cat, count]) => (
             <button key={cat} className="flex flex-col items-start gap-1 p-3.5 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 hover:border-black/10 dark:hover:border-white/10 transition-all duration-300 hover:bg-black/[0.05] dark:hover:bg-white/[0.05]">
               <span className="text-[12px] font-semibold text-foreground/80">{cat}</span>
-              <span className="text-[10px] text-muted-foreground/40 font-mono">12 items</span>
+              <span className="text-[10px] text-muted-foreground/40 font-mono">{count} items</span>
             </button>
           ))}
         </div>

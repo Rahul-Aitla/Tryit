@@ -1,4 +1,4 @@
-# AI Outfit Image Generation Tool
+# Tryit — AI Outfit Image Generation Tool
 
 A high-performance AI fashion generation platform built with Next.js 15, Supabase, and Google Cloud Storage.
 

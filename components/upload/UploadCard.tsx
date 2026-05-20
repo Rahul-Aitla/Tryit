@@ -1,8 +1,9 @@
 "use client"
 import React from "react"
-import { X, Sparkles } from "lucide-react"
+import { X, Sparkles, ExternalLink } from "lucide-react"
 import { motion } from "framer-motion"
 import Image from "next/image"
+import Link from "next/link"
 
 interface UploadCardProps {
   item: {
@@ -100,10 +101,17 @@ export default function UploadCard({ item, onRemove }: UploadCardProps) {
         )}
 
         {isDone && (
-          <div className="absolute inset-0 flex items-center justify-center bg-emerald-500/10 backdrop-blur-[2px]">
-            <div className="h-12 w-12 rounded-full bg-white dark:bg-emerald-500 flex items-center justify-center shadow-xl">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-emerald-500/10 backdrop-blur-[2px] transition-all duration-500 group-hover:bg-emerald-500/20">
+            <div className="h-12 w-12 rounded-full bg-white dark:bg-emerald-500 flex items-center justify-center shadow-xl mb-4 transform transition-transform duration-500 group-hover:scale-110">
               <Sparkles className="h-6 w-6 text-emerald-500 dark:text-white" />
             </div>
+            <Link 
+              href="/gallery"
+              className="px-4 py-2 bg-white dark:bg-black/80 backdrop-blur-md rounded-xl text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-lg flex items-center gap-2 hover:scale-105 active:scale-95 transition-all"
+            >
+              View in Gallery
+              <ExternalLink className="h-3 w-3" />
+            </Link>
           </div>
         )}
       </div>

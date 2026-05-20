@@ -14,7 +14,7 @@ export const setupWorker = () => {
       // 1. Update status to 'Processing'
       await prisma.generationJob.update({
         where: { id: jobId },
-        data: { status: 'Processing' }
+        data: { status: 'Processing', progress: 10 }
       })
 
       // 2. Fetch outfit + references
@@ -29,6 +29,11 @@ export const setupWorker = () => {
 
       if (!outfit) throw new Error('Outfit not found in database')
 
+      await prisma.generationJob.update({
+        where: { id: jobId },
+        data: { progress: 20 }
+      })
+
       const references = {
         lighting:  outfit.project.references.find(r => r.referenceType === 'lighting')?.imageUrl,
         pose:      outfit.project.references.find(r => r.referenceType === 'pose')?.imageUrl,
@@ -37,6 +42,11 @@ export const setupWorker = () => {
         camera:    outfit.project.references.find(r => r.referenceType === 'camera')?.imageUrl,
         vibe:      outfit.project.references.find(r => r.referenceType === 'vibe')?.imageUrl,
       }
+
+      await prisma.generationJob.update({
+        where: { id: jobId },
+        data: { progress: 30 }
+      })
 
       // 3. Call Nano Banana (Gemini) AI
       const results = await generateOutfitImage({
@@ -51,6 +61,11 @@ export const setupWorker = () => {
         throw new Error('AI generation returned no images')
       }
 
+      await prisma.generationJob.update({
+        where: { id: jobId },
+        data: { progress: 80 }
+      })
+
       console.log(`[Worker] AI returned ${results.length} images. Saving to DB...`)
 
       // 4. Save each generated image individually (no transaction — pgbouncer safe)
@@ -64,10 +79,17 @@ export const setupWorker = () => {
             }
           })
           savedCount++
+          
+          // Increment progress slightly for each image saved
+          const progressStep = Math.floor(15 / results.length)
+          await prisma.generationJob.update({
+            where: { id: jobId },
+            data: { progress: 80 + (savedCount * progressStep) }
+          })
+
           console.log(`[Worker] Saved image ${savedCount}/${results.length}: ${res.url.slice(-40)}`)
         } catch (saveErr) {
           console.error(`[Worker] Failed to save image ${savedCount + 1}:`, saveErr)
-          // Continue saving remaining images even if one fails
         }
       }
 
@@ -78,7 +100,7 @@ export const setupWorker = () => {
       // 5. Mark job Completed only AFTER images are confirmed saved
       await prisma.generationJob.update({
         where: { id: jobId },
-        data: { status: 'Completed' }
+        data: { status: 'Completed', progress: 100 }
       })
 
       await prisma.outfit.update({

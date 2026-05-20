@@ -1,9 +1,10 @@
 "use client"
 import React, { useCallback, useState, useEffect } from "react"
 import UploadCard from "./UploadCard"
-import { Upload, Cloud, ArrowRight, Globe, Save, FileText, X, Plus, Loader2 } from "lucide-react"
+import { Upload, Cloud, ArrowRight, Globe, Save, FileText, X, Plus, Loader2, Image as ImageIcon, CheckCircle2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import JSZip from "jszip"
+import Link from "next/link"
 
 type FileEntry = {
   id: string
@@ -47,6 +48,7 @@ export default function UploadArea({ projectId, outputsRequested, prompt, refere
   const [showPromptPreview, setShowPromptPreview] = useState(false)
   const [customPrompt, setCustomPrompt] = useState<string>("")
   const [refiningPrompt, setRefiningPrompt] = useState(false)
+  const [showGalleryPrompt, setShowGalleryPrompt] = useState(false)
 
   // Load existing outfits when projectId changes
   useEffect(() => {
@@ -305,7 +307,7 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
     
     for (const it of toProcess) {
       try {
-        setItems((s) => s.map((x) => (x.id === it.id ? { ...x, status: "processing", progress: 5 } : x)))
+        setItems((s) => s.map((x) => (x.id === it.id ? { ...x, status: "processing", progress: 0 } : x)))
         
         const res = await fetch("/api/generate", {
           method: "POST",
@@ -319,15 +321,42 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
         })
 
         if (!res.ok) throw new Error("Generation request failed")
+        const { jobId } = await res.json()
 
-        // Animate progress while the background worker processes
-        let p = 5
-        const interval = setInterval(() => {
-          p = Math.min(95, p + 2)
-          setItems((s) => s.map((x) => (x.id === it.id ? { ...x, progress: p } : x)))
-          if (p >= 95) {
-            clearInterval(interval)
-            setItems((s) => s.map((x) => (x.id === it.id ? { ...x, status: "done", progress: 100 } : x)))
+        // Real-time polling for job status
+        const pollInterval = setInterval(async () => {
+          try {
+            const statusRes = await fetch(`/api/generate/status/${jobId}`)
+            if (!statusRes.ok) return
+
+            const statusData = await statusRes.json()
+            
+            setItems((s) => s.map((x) => {
+              if (x.id === it.id) {
+                const newStatus = statusData.status.toLowerCase() as FileEntry["status"]
+                // Map API status to UI status
+                let uiStatus: FileEntry["status"] = "processing"
+                if (newStatus === "completed") uiStatus = "done"
+                if (newStatus === "failed") uiStatus = "error"
+                if (newStatus === "queued") uiStatus = "queued"
+                
+                return { 
+                  ...x, 
+                  status: uiStatus, 
+                  progress: statusData.progress 
+                }
+              }
+              return x
+            }))
+
+            if (statusData.status === "Completed") {
+              clearInterval(pollInterval)
+              setShowGalleryPrompt(true)
+            } else if (statusData.status === "Failed") {
+              clearInterval(pollInterval)
+            }
+          } catch (pollErr) {
+            console.error("Polling error:", pollErr)
           }
         }, 2000)
 
@@ -645,6 +674,49 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
               </form>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating Gallery Notification */}
+      <AnimatePresence>
+        {showGalleryPrompt && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[60] min-w-[320px]"
+          >
+            <div className="bg-white dark:bg-[#0B0D16] border border-emerald-500/20 rounded-3xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.4)] backdrop-blur-2xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/0 via-emerald-500/50 to-emerald-500/0" />
+              
+              <div className="flex items-start gap-4">
+                <div className="h-10 w-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shrink-0">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-[14px] font-bold text-foreground mb-1">Campaign Assets Ready</h4>
+                  <p className="text-[12px] text-muted-foreground/60 leading-relaxed mb-4">
+                    The AI orchestrator has successfully generated your editorial photography.
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Link 
+                      href="/gallery"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-[12px] font-bold shadow-glow-primary hover:opacity-90 transition-all active:scale-95"
+                    >
+                      <ImageIcon className="h-4 w-4" />
+                      Enter Gallery
+                    </Link>
+                    <button 
+                      onClick={() => setShowGalleryPrompt(false)}
+                      className="px-4 py-2.5 bg-slate-100 dark:bg-white/[0.05] text-muted-foreground/60 rounded-xl text-[12px] font-bold hover:bg-slate-200 dark:hover:bg-white/[0.1] transition-all"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
