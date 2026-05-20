@@ -1,0 +1,16 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install --legacy-peer-deps",
+  "regions": ["sfo1"],
+  "env": {
+    "DATABASE_URL": { "target": "production" },
+    "DIRECT_URL": { "target": "production" },
+    "REDIS_URL": { "target": "production" },
+    "GCS_BUCKET_NAME": { "target": "production" },
+    "GCS_PROJECT_ID": { "target": "production" },
+    "GCS_CLIENT_EMAIL": { "target": "production" },
+    "GCS_PRIVATE_KEY": { "target": "production" },
+    "NANO_BANANA_API_KEY": { "target": "production" }
+  }
+}

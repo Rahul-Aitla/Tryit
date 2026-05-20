@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"next dev\" \"npm run worker\"",
-    "build": "next build",
+    "dev": "concurrently \"next dev\" \"npm run worker:dev\"",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "worker": "tsx watch worker.ts"
+    "worker:dev": "tsx watch worker.ts",
+    "worker:start": "prisma generate && tsx worker.ts"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.19.0",
