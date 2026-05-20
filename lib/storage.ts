@@ -8,9 +8,6 @@ const storage = new Storage({
   },
 });
 
-const bucketName = process.env.GCS_BUCKET_NAME || '';
-const bucket = storage.bucket(bucketName);
-
 export default storage;
 
 export const uploadToGCS = async (
@@ -19,7 +16,13 @@ export const uploadToGCS = async (
   contentType: string,
   folder: 'outfits' | 'references' | 'generated'
 ) => {
+  const bucketName = process.env.GCS_BUCKET_NAME;
+  if (!bucketName) {
+    throw new Error('GCS_BUCKET_NAME environment variable is not set');
+  }
+
   try {
+    const bucket = storage.bucket(bucketName);
     const destination = `ai-outfit-tool/${folder}/${Date.now()}-${fileName}`;
     const file = bucket.file(destination);
 
