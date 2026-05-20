@@ -77,10 +77,10 @@ ${userNotes}
 Enhanced Prompt Paragraph:`
 
   try {
-    console.log("[AI Layer] Enhancing prompt with gemini-2.5-flash text model...")
+    console.log("[AI Layer] Enhancing prompt with nano-banana-pro-preview model...")
     const startTime = Date.now()
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/nano-banana-pro-preview:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -231,8 +231,17 @@ export async function generateOutfitImage(params: {
     }
 
     const data = await res.json()
+    console.log(`[AI] API Response Status: ${res.status}`)
+    
     const candidate = data.candidates?.[0]
     if (!candidate?.content?.parts) {
+      console.error(`[AI] Invalid response structure. Full response:`, JSON.stringify(data, null, 2))
+      
+      // Check if it was blocked by safety
+      if (candidate?.finishReason === 'SAFETY') {
+        throw new Error('Generation failed: The request was blocked by safety filters. Try a different prompt.')
+      }
+      
       throw new Error('Invalid response from AI generation API')
     }
 

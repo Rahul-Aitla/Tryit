@@ -484,21 +484,21 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
       {/* Advanced Prompt Preview & Editable Layer Modal */}
       <AnimatePresence>
         {showPromptPreview && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-[#070811]/90 backdrop-blur-xl">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-background/80 dark:bg-[#070811]/90 backdrop-blur-xl">
             <motion.div
               initial={{ opacity: 0, scale: 0.98, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98, y: 10 }}
-              className="relative w-full max-w-4xl rounded-[2.5rem] border border-white/5 bg-[#0B0D16] p-10 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+              className="relative w-full max-w-4xl rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-white dark:bg-[#0B0D16] p-10 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
             >
               {/* Decorative subtle ambient lighting */}
-              <div className="absolute top-[-30%] left-[-30%] w-[60%] h-[60%] bg-[#7C5CFF]/10 rounded-full blur-[120px] pointer-events-none" />
+              <div className="absolute top-[-30%] left-[-30%] w-[60%] h-[60%] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
               
               {/* Header */}
-              <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/5 relative z-10">
+              <div className="flex items-center justify-between mb-8 pb-6 border-b border-black/5 dark:border-white/5 relative z-10">
                 <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-2xl bg-[#7C5CFF]/10 flex items-center justify-center border border-[#7C5CFF]/20">
-                    <FileText className="h-6 w-6 text-[#7C5CFF]" />
+                  <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                    <FileText className="h-6 w-6 text-primary" />
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold tracking-tight text-foreground">Orchestration Logic</h2>
@@ -507,7 +507,7 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
                 </div>
                 <button
                   onClick={() => setShowPromptPreview(false)}
-                  className="p-2.5 hover:bg-white/5 rounded-xl transition-all duration-300 text-muted-foreground/40 hover:text-foreground"
+                  className="p-2.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl transition-all duration-300 text-muted-foreground/40 hover:text-foreground"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -515,7 +515,7 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
 
               {/* Editable Area */}
               <div className="flex-1 overflow-y-auto mb-8 relative z-10 space-y-6 pr-2 custom-scrollbar">
-                <div className="bg-[#38BDF8]/5 border border-[#38BDF8]/10 rounded-2xl p-5 text-[13px] text-[#38BDF8]/80 leading-relaxed font-medium">
+                <div className="bg-primary/5 border border-primary/10 rounded-2xl p-5 text-[13px] text-primary/80 leading-relaxed font-medium">
                   💡 <strong>Synthesis Protocol:</strong> The orchestrator uses a <strong>5-layer logic system</strong> to ensure pixel-perfect garment fidelity. Avoid modifying the <code>[OUTFIT PRESERVATION]</code> block for technical accuracy.
                 </div>
 
@@ -524,14 +524,14 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
                   <textarea
                     value={customPrompt}
                     onChange={(e) => setCustomPrompt(e.target.value)}
-                    className="w-full min-h-[400px] p-6 bg-white/[0.02] border border-white/5 rounded-[2rem] text-[13.5px] font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#7C5CFF]/10 text-foreground/90 resize-none transition-all"
+                    className="w-full min-h-[400px] p-6 bg-slate-50 dark:bg-white/[0.02] border border-black/5 dark:border-white/5 rounded-[2rem] text-[13.5px] font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary/10 text-foreground/90 resize-none transition-all"
                     placeholder="Enter custom orchestration instructions..."
                   />
                 </div>
               </div>
 
               {/* Actions */}
-              <div className="flex items-center justify-between pt-4 border-t border-border/40 relative z-10">
+              <div className="flex items-center justify-between pt-4 border-t border-black/5 dark:border-white/5 relative z-10">
                 <button
                   onClick={() => {
                     setCustomPrompt("") // resets to getCompiledPrompt fallback
@@ -544,7 +544,7 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setShowPromptPreview(false)}
-                    className="px-5 py-2.5 rounded-full text-xs font-bold border border-border/50 hover:bg-secondary text-foreground transition-all"
+                    className="px-5 py-2.5 rounded-full text-xs font-bold border border-black/5 dark:border-white/10 hover:bg-secondary text-foreground transition-all"
                   >
                     Cancel
                   </button>
@@ -553,7 +553,7 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
                       setShowPromptPreview(false)
                       startGeneration()
                     }}
-                    className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 text-white px-6 py-2.5 rounded-full text-xs font-bold transition-all shadow-lg shadow-violet-500/20 active:scale-95"
+                    className="flex items-center gap-1.5 bg-primary hover:opacity-90 text-white px-6 py-2.5 rounded-full text-xs font-bold transition-all shadow-glow active:scale-95"
                   >
                     <Save className="h-4 w-4" /> Confirm & Generate 🚀
                   </button>
