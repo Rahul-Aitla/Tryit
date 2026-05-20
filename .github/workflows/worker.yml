@@ -1,0 +1,59 @@
+name: AI Generation Worker
+
+on:
+  schedule:
+    # Run every 10 minutes
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9  # Keep under 10 minutes for safety
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+      
+      - name: Generate Prisma Client
+        run: npx prisma generate
+      
+      - name: Run worker for 8 minutes
+        env:
+          # Database
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          
+          # Redis
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+          
+          # Google Cloud Storage
+          GCS_BUCKET_NAME: ${{ secrets.GCS_BUCKET_NAME }}
+          GCS_PROJECT_ID: ${{ secrets.GCS_PROJECT_ID }}
+          GCS_CLIENT_EMAIL: ${{ secrets.GCS_CLIENT_EMAIL }}
+          GCS_PRIVATE_KEY: ${{ secrets.GCS_PRIVATE_KEY }}
+          
+          # AI API
+          NANO_BANANA_API_KEY: ${{ secrets.NANO_BANANA_API_KEY }}
+        
+        run: |
+          # Run worker for 8 minutes (480 seconds), then kill it gracefully
+          # This ensures cleanup happens within GitHub Actions timeout
+          timeout 480 npm run worker:start || exit_code=$?
+          
+          # exit_code 124 means timeout (which is expected)
+          if [ "${exit_code:-0}" -eq 124 ]; then
+            echo "✅ Worker timeout reached (expected after 8 minutes)"
+            exit 0
+          fi
+          
+          exit ${exit_code:-0}
