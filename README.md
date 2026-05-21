@@ -80,129 +80,83 @@
 
 ### High-Level Architecture Diagram
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     USER INTERFACE LAYER                         │
-│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────┐  │
-│  │   Upload Page    │  │   Dashboard      │  │   Gallery    │  │
-│  │  - ZIP Extract   │  │   - Job Status   │  │  - Results   │  │
-│  │  - Multi-file    │  │   - Analytics    │  │  - Compare   │  │
-│  └──────────────────┘  └──────────────────┘  └──────────────┘  │
-└────────────────┬────────────────────────────────────┬───────────┘
-                 │                                    │
-                 ▼                                    ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                   API LAYER (Next.js Routes)                     │
-│  ┌──────────────┐ ┌──────────────┐ ┌──────────────────────────┐│
-│  │ /api/upload  │ │ /api/generate│ │ /api/gallery, /api/jobs ││
-│  │  - Validate  │ │  - Queue job │ │  - Fetch metadata       ││
-│  │  - Store     │ │  - Trigger   │ │  - Output retrieval     ││
-│  └──────────────┘ └──────────────┘ └──────────────────────────┘│
-└────────────────┬────────────────────────────────────────┬────────┘
-                 │                                        │
-                 ▼                                        ▼
-        ┌─────────────────────┐            ┌────────────────────────┐
-        │  Google Cloud       │            │   PostgreSQL Database  │
-        │  Storage            │            │   (via Supabase)       │
-        │  ┌─────────────────┐│            │  ┌──────────────────┐ │
-        │  │ /outfits        ││            │  │ Projects table   │ │
-        │  │ /references     ││            │  │ Jobs table       │ │
-        │  │ /generated      ││            │  │ Outputs table    │ │
-        │  └─────────────────┘│            │  └──────────────────┘ │
-        └─────────────────────┘            └────────────────────────┘
-                 ▲                                        ▲
-                 │                                        │
-                 └────────────────┬─────────────────────┘
-                                  │
-                 ┌────────────────▼────────────────┐
-                 │   Queue System (BullMQ + Redis) │
-                 │   ┌──────────────────────────┐ │
-                 │   │  Job Scheduling          │ │
-                 │   │  - Every 3 minutes       │ │
-                 │   │  - On-demand trigger     │ │
-                 │   └──────────────────────────┘ │
-                 └────────────────┬────────────────┘
-                                  │
-                 ┌────────────────▼────────────────┐
-                 │   WORKER LAYER                   │
-                 │  ┌──────────────────────────┐  │
-                 │  │ Prompt Engine            │  │
-                 │  │ - Preservation Block     │  │
-                 │  │ - Creative Block         │  │
-                 │  │ - Reference Block        │  │
-                 │  └──────────────────────────┘  │
-                 │  ┌──────────────────────────┐  │
-                 │  │ Image Processing         │  │
-                 │  │ - Nano Banana 2 API      │  │
-                 │  │ - Error Handling         │  │
-                 │  │ - Result Storage         │  │
-                 │  └──────────────────────────┘  │
-                 └────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph UI["🎨 User Interface Layer"]
+        Upload["Upload Page<br/>ZIP Extract"]
+        Dashboard["Dashboard<br/>Job Status"]
+        Gallery["Gallery<br/>Results View"]
+    end
+    
+    subgraph API["⚙️ API Layer - Next.js"]
+        UploadAPI["/api/upload<br/>Validate & Store"]
+        GenerateAPI["/api/generate<br/>Queue Job"]
+        GalleryAPI["/api/gallery<br/>Fetch Output"]
+    end
+    
+    subgraph Storage["💾 Data Layer"]
+        CloudStorage["Cloud Storage<br/>Images & Assets"]
+        Database["PostgreSQL<br/>Supabase<br/>Metadata"]
+    end
+    
+    subgraph Queue["🔄 Job Queue"]
+        Redis["BullMQ + Redis<br/>Job Scheduling"]
+    end
+    
+    subgraph Worker["🤖 Worker Layer - Render"]
+        PromptEngine["Prompt Engine<br/>3-Block System"]
+        AIIntegration["Nano Banana 2<br/>GPT-4 Vision"]
+        Processing["Image Processing<br/>& Storage"]
+    end
+    
+    UI --> API
+    API --> Storage
+    API --> Queue
+    Queue --> Worker
+    Worker --> Storage
+    Storage --> UI
 ```
 
-### Data Flow Diagram
+### User Workflow - Complete Journey
 
+```mermaid
+graph LR
+    A["👤 User"] -->|Upload Outfit| B["📤 Upload Page"]
+    B -->|Validate| C{"File OK?"}
+    C -->|❌ No| B
+    C -->|✅ Yes| D["💾 Store in Cloud"]
+    D --> E["📝 Add Creative Direction"]
+    E --> F["📸 Add Reference Image<br/>(Optional)"]
+    F --> G["▶️ Submit Generation"]
+    G --> H["⏳ Job Queued"]
+    H --> I["🔄 Worker Processing"]
+    I --> J["🎨 AI Generation<br/>30-60 seconds"]
+    J --> K["✅ Result Generated"]
+    K --> L["📊 Dashboard Update<br/>Real-time"]
+    L --> M["🖼️ View in Gallery"]
+    M --> N["⬇️ Download Result"]
 ```
-User Upload
-     │
-     ▼
-┌─────────────────────┐
-│ Frontend Validation │
-│ - File type check   │
-│ - Size limits       │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────────────┐
-│ Upload to GCS               │
-│ /outfits/[projectId]/[file] │
-└──────────┬──────────────────┘
-           │
-           ▼
-┌──────────────────────────────┐
-│ Store Metadata in Database   │
-│ - File path                  │
-│ - Project association        │
-│ - Upload timestamp           │
-└──────────┬───────────────────┘
-           │
-           ▼
-┌──────────────────────────────┐
-│ Create Generation Job         │
-│ - Queue in BullMQ            │
-│ - Store job record           │
-└──────────┬───────────────────┘
-           │
-           ▼
-┌──────────────────────────────┐
-│ Trigger Worker               │
-│ - On-demand or scheduled     │
-└──────────┬───────────────────┘
-           │
-           ▼
-┌──────────────────────────────┐
-│ Worker Process               │
-│ 1. Fetch job from queue      │
-│ 2. Download images from GCS  │
-│ 3. Build structured prompt   │
-│ 4. Call Nano Banana 2 API    │
-│ 5. Process generated image   │
-└──────────┬───────────────────┘
-           │
-           ▼
-┌──────────────────────────────┐
-│ Upload Result                │
-│ /generated/[projectId]/[id]  │
-│ Update job status: COMPLETE  │
-└──────────┬───────────────────┘
-           │
-           ▼
-┌──────────────────────────────┐
-│ Real-time Update             │
-│ - Frontend polls status       │
-│ - Gallery refreshes          │
-│ - User notified              │
-└──────────────────────────────┘
+
+### Data Flow - Generation Pipeline
+
+```mermaid
+graph TD
+    A["User Submits<br/>Generation Request"] --> B["Validate Input<br/>Files & Params"]
+    B --> C{"Valid?"}
+    C -->|❌| D["Return Error"]
+    C -->|✅| E["Store in Database"]
+    E --> F["Add to Redis Queue<br/>BullMQ"]
+    F --> G["Trigger Worker<br/>on Render"]
+    G --> H["Worker Fetches<br/>Job from Queue"]
+    H --> I["Download Images<br/>from Cloud Storage"]
+    I --> J["Build Structured<br/>Prompt<br/>3 Blocks"]
+    J --> K["Call Nano Banana 2<br/>API with Images"]
+    K --> L["Receive Generated<br/>Image Base64"]
+    L --> M["Upload Result<br/>to Cloud Storage"]
+    M --> N["Update Database<br/>Status: COMPLETE"]
+    N --> O["Poll/Webhook<br/>Frontend Update"]
+    O --> P["Display in<br/>Gallery"]
+    P --> Q["User Downloads<br/>Result"]
 ```
 
 ### Component Architecture
@@ -342,9 +296,25 @@ npm run worker:start
 
 ## 🚀 Render Worker Deployment
 
-### Overview
+### Deployment Workflow
 
-**Render** is a modern cloud platform that makes deploying and managing applications simple. We use it for continuous background worker processing.
+```mermaid
+graph LR
+    A["1️⃣ Push Code<br/>to GitHub"] -->|main branch| B["2️⃣ Render Detects<br/>Changes"]
+    B --> C["3️⃣ Trigger Build<br/>Pipeline"]
+    C --> D["4️⃣ Install Deps<br/>npm install"]
+    D --> E["5️⃣ Generate<br/>Prisma Client"]
+    E --> F["6️⃣ Start Worker<br/>npm run worker:start"]
+    F --> G["7️⃣ Worker Online<br/>on Render"]
+    G --> H["8️⃣ Listen for<br/>Jobs in Redis"]
+    H --> I["⏳ Awaiting<br/>Generation Requests"]
+    I --> J["🔄 Process Jobs<br/>Continuously"]
+    J --> I
+    
+    style A fill:#4CAF50
+    style G fill:#2196F3
+    style J fill:#FF9800
+```
 
 ### Step 1: Create Render Account
 
@@ -568,9 +538,105 @@ ${buildReferenceBlock(referenceStyle)}
 3. **Visual References** — Images communicate style better than words
 4. **Clear Hierarchy** — Preservation > Creative > Reference
 
+### Worker Processing Pipeline
+
+```mermaid
+graph TD
+    A["🔄 Worker Starts<br/>Connected to Redis"] --> B["👂 Listen for Jobs<br/>BullMQ Queue"]
+    B --> C{{"Job<br/>Available?"}}
+    C -->|❌ No| B
+    C -->|✅ Yes| D["📥 Fetch Job<br/>from Queue"]
+    D --> E["📥 Download Images<br/>from Cloud Storage"]
+    E --> F["🎯 Extract Image Info<br/>Outfit & Reference"]
+    F --> G["🔨 Build Prompt Block 1<br/>Preservation Instructions"]
+    G --> H["🎨 Build Prompt Block 2<br/>Creative Direction"]
+    H --> I["📸 Build Prompt Block 3<br/>Reference Interpretation"]
+    I --> J["📝 Combine into<br/>Structured Prompt"]
+    J --> K["🤖 Call Nano Banana 2<br/>API with Images"]
+    K --> L{{"API<br/>Success?"}}
+    L -->|❌ Failed| M["🔁 Retry with<br/>Exponential Backoff"]
+    M --> K
+    L -->|✅ Success| N["🖼️ Receive Generated<br/>Image Base64"]
+    N --> O["💾 Upload Result<br/>to Cloud Storage"]
+    O --> P["🗄️ Update Database<br/>Job Status: COMPLETE"]
+    P --> Q["✅ Job Complete<br/>Return to Queue"]
+    Q --> B
+    
+    style A fill:#4CAF50
+    style B fill:#2196F3
+    style N fill:#FF9800
+    style P fill:#9C27B0
+    style Q fill:#4CAF50
+```
+
 ---
 
 ## 📁 Project Structure
+
+### Component Architecture & Relationships
+
+```mermaid
+graph TB
+    subgraph Pages["📄 Pages - User Facing"]
+        Home["/ - Upload Page"]
+        Dashboard["Dashboard - Projects"]
+        Gallery["Gallery - View Results"]
+    end
+    
+    subgraph API["⚙️ API Routes"]
+        Upload["/api/upload<br/>Handle file uploads"]
+        Generate["/api/generate<br/>Create jobs"]
+        FetchGallery["/api/gallery<br/>Get outputs"]
+        FetchProjects["/api/projects<br/>CRUD projects"]
+    end
+    
+    subgraph Components["🎨 UI Components"]
+        Upload_UI["UploadArea<br/>Drop zone"]
+        UploadCard["UploadCard<br/>File preview"]
+        Sidebar["Sidebars<br/>Navigation"]
+        Header["Header<br/>Navigation bar"]
+    end
+    
+    subgraph Lib["📚 Libraries & Utils"]
+        Prisma["prisma.ts<br/>DB queries"]
+        Storage["storage.ts<br/>File operations"]
+        Queue["queue.ts<br/>Job management"]
+        Utils["utils.ts<br/>Helpers"]
+    end
+    
+    subgraph Server["🖥️ Server/Worker"]
+        AI["nanoBanana.ts<br/>AI API calls"]
+        Prompt["promptEngine.ts<br/>Build prompts"]
+        Worker["generationWorker.ts<br/>Process jobs"]
+    end
+    
+    subgraph Data["💾 Data Layer"]
+        DB["PostgreSQL<br/>Supabase"]
+        Redis["Redis<br/>Upstash"]
+        Storage_Cloud["Cloud Storage<br/>Images"]
+    end
+    
+    Home --> Upload_UI
+    Dashboard --> Sidebar
+    Gallery --> FetchGallery
+    
+    Upload_UI --> Upload
+    Upload --> Lib
+    Generate --> Queue
+    FetchGallery --> Prisma
+    
+    Queue --> Redis
+    Prisma --> DB
+    Upload --> Storage
+    
+    Redis --> Worker
+    Worker --> Prompt
+    Prompt --> AI
+    AI --> Storage_Cloud
+    Storage_Cloud --> FetchGallery
+```
+
+### Directory Structure
 
 ```
 frontend/
@@ -600,7 +666,7 @@ frontend/
 │
 ├── lib/
 │   ├── prisma.ts                # Database client
-│   ├── storage.ts               # GCS operations
+│   ├── storage.ts               # Cloud storage operations
 │   ├── queue.ts                 # Redis queue
 │   ├── utils.ts                 # Helpers
 │   └── mockUpload.ts            # Test utilities
@@ -825,45 +891,54 @@ Worker → Fetch images from GCS
 
 ### Manual Testing Workflow
 
-```bash
-# 1. Start frontend
-npm run dev
-# → Opens http://localhost:3000
-
-# 2. Upload test image
-# Go to Upload page, select outfit image
-
-# 3. Add reference image (optional)
-# Select style reference image
-
-# 4. Submit generation
-# Specify creative direction (e.g., "summer style")
-
-# 5. Monitor in dashboard
-# Watch real-time job status
-
-# 6. View results
-# Check gallery after job completes
+```mermaid
+graph LR
+    A["🖥️ Terminal:<br/>npm run dev"] --> B["🌐 Open<br/>localhost:3000"]
+    B --> C["📤 Upload Page"]
+    C --> D["🖼️ Select<br/>Outfit Image"]
+    D --> E["📸 Add Reference<br/>Optional"]
+    E --> F["✍️ Add Creative<br/>Direction"]
+    F --> G["▶️ Submit"]
+    G --> H["📊 Dashboard<br/>View Status"]
+    H --> I{{"Status<br/>Check"}}
+    I -->|⏳ Processing| H
+    I -->|✅ Complete| J["🖼️ View in<br/>Gallery"]
+    J --> K["🔍 Compare<br/>Before/After"]
+    K --> L["⬇️ Download<br/>Result"]
+    
+    style A fill:#FF9800
+    style G fill:#4CAF50
+    style H fill:#2196F3
+    style L fill:#9C27B0
 ```
 
 ### Example Test Cases
 
-**Test Case 1: Basic Generation**
-- Input: Blue cotton shirt
-- Reference: Beach aesthetic
-- Expected: Shirt rendered in summer colors with beach lighting
-- Result: ✅ Pass (maintains structure, applies style)
-
-**Test Case 2: Consistency Check**
-- Input: Dress with unique pattern
-- Creative: Change color but keep pattern
-- Expected: Pattern preserved, new color applied
-- Result: ✅ Pass (pattern and texture maintained)
-
-**Test Case 3: Batch Processing**
-- Input: 5 outfit images
-- Expected: All processed sequentially
-- Result: ✅ Pass (queue processes all jobs)
+```mermaid
+graph TB
+    Test1["Test Case 1: Basic Generation"]
+    Test1Input["Input: Blue cotton shirt<br/>Reference: Beach aesthetic"]
+    Test1Expected["Expected: Shirt in summer colors<br/>with beach lighting"]
+    Test1Result["✅ Pass<br/>Maintains structure, applies style"]
+    
+    Test2["Test Case 2: Consistency Check"]
+    Test2Input["Input: Dress with unique pattern<br/>Creative: Change color"]
+    Test2Expected["Expected: Pattern preserved<br/>New color applied"]
+    Test2Result["✅ Pass<br/>Pattern & texture maintained"]
+    
+    Test3["Test Case 3: Batch Processing"]
+    Test3Input["Input: 5 outfit images<br/>Expected: Sequential processing"]
+    Test3Expected["Expected: All processed<br/>No bottlenecks"]
+    Test3Result["✅ Pass<br/>Queue processes all jobs"]
+    
+    Test1 --> Test1Input --> Test1Expected --> Test1Result
+    Test2 --> Test2Input --> Test2Expected --> Test2Result
+    Test3 --> Test3Input --> Test3Expected --> Test3Result
+    
+    style Test1Result fill:#4CAF50
+    style Test2Result fill:#4CAF50
+    style Test3Result fill:#4CAF50
+```
 
 ### Sample Generated Outputs
 
@@ -903,34 +978,88 @@ Expected outputs show:
 
 ## 🚀 Deployment Guide
 
-### Frontend Deployment (Vercel)
+### Complete Deployment Architecture
 
-```bash
-# Already configured with Vercel
-# Automatic deploy on push to main branch
-
-# Manual deploy:
-npx vercel deploy --prod
+```mermaid
+graph TB
+    subgraph Dev["🖥️ Development"]
+        Local["Local Machine<br/>npm run dev"]
+        LocalWorker["Worker Local<br/>npm run worker:start"]
+    end
+    
+    subgraph GitHub["🐙 Version Control"]
+        Repo["GitHub Repository<br/>main branch"]
+    end
+    
+    subgraph Frontend["🎨 Frontend Deployment"]
+        Vercel["Vercel<br/>Next.js Hosting<br/>Auto-deploy on push"]
+        VercelURL["🌐 tryit-yourself.vercel.app"]
+    end
+    
+    subgraph Worker["🤖 Worker Deployment"]
+        Render["Render<br/>Background Worker<br/>Auto-deploy on push"]
+        RenderLogs["📊 Render Dashboard<br/>Logs & Monitoring"]
+    end
+    
+    subgraph Services["☁️ Third-Party Services"]
+        Supabase["🗄️ Supabase<br/>PostgreSQL"]
+        Upstash["⚡ Upstash<br/>Redis Queue"]
+        NanoBanana["🤖 Nano Banana 2<br/>AI API"]
+        Storage["💾 Cloud Storage<br/>Images"]
+    end
+    
+    Local --> Repo
+    LocalWorker --> Repo
+    Repo --> Vercel
+    Repo --> Render
+    Vercel --> VercelURL
+    Render --> RenderLogs
+    VercelURL --> Services
+    Render --> Services
+    Supabase -.->|Jobs| Render
+    Upstash -.->|Queue| Render
+    NanoBanana -.->|AI| Render
+    Storage -.->|Images| Services
+    
+    style VercelURL fill:#000
+    style VercelURL color:#fff
+    style Vercel fill:#000
+    style Vercel color:#fff
+    style Render fill:#4CAF50
+    style RenderLogs fill:#2196F3
 ```
 
-### Worker Deployment (Render)
+### Deployment Steps Summary
 
-✅ **Already configured** following Render Worker Deployment section above
+**Frontend (Vercel)**
+```bash
+1. Push code to GitHub main branch
+2. Vercel automatically detects changes
+3. Runs build: npm run build
+4. Deploys to https://tryit-yourself.vercel.app
+5. Live in ~1-2 minutes
+```
 
-Deployment flow:
-1. Push to main branch on GitHub
-2. Render automatically pulls latest code
-3. Runs build command: `npm install && npm run prisma:generate`
-4. Starts worker: `npm run worker:start`
-5. Continuously processes jobs from Redis queue
+**Worker (Render)**
+```bash
+1. Push code to GitHub main branch  
+2. Render automatically pulls latest
+3. Runs build: npm install && npm run prisma:generate
+4. Starts worker: npm run worker:start
+5. Worker online and processing jobs
+```
 
-Monitor at: https://dashboard.render.com
+**Monitoring**
+```bash
+# Frontend logs
+vercel logs tryit
 
-
+# Worker logs
+# Go to: https://dashboard.render.com
+# View real-time logs and metrics
+```
 
 ---
-
-## 🔧 Troubleshooting
 
 ### Issue: "Job not processing"
 
