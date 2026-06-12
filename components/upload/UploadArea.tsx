@@ -417,7 +417,7 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
           const files = Array.from(e.dataTransfer.files)
           processFiles(files)
         }}
-        className={`relative flex-1 min-h-[400px] rounded-[2.5rem] border-2 border-dashed transition-all duration-500 overflow-hidden flex flex-col items-center justify-center p-12 ${
+        className={`relative flex-1 min-h-[250px] sm:min-h-[400px] rounded-[2.5rem] border-2 border-dashed transition-all duration-500 overflow-hidden flex flex-col items-center justify-center p-6 sm:p-12 ${
           isDragging
             ? "border-primary bg-primary/[0.02] scale-[0.99]"
             : "border-black/5 dark:border-white/5 bg-gradient-to-b from-white dark:from-white/[0.02] to-slate-50 dark:to-transparent shadow-elevated"
@@ -480,13 +480,13 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
       </div>
 
       {/* Footer Controls */}
-      <div className="flex items-center justify-between p-2">
-        <div className="flex items-center gap-4">
-          <div className="px-4 py-2 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 flex items-center gap-3">
-            <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
-            <span className="text-[12px] font-medium text-muted-foreground/80">Ready for generation</span>
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0 p-2">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+          <div className="px-3 sm:px-4 py-2 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 flex items-center gap-2 sm:gap-3 whitespace-nowrap">
+            <div className="h-2 w-2 rounded-full bg-success animate-pulse shrink-0" />
+            <span className="text-[11px] sm:text-[12px] font-medium text-muted-foreground/80">Ready for generation</span>
           </div>
-          <div className="text-[12px] text-muted-foreground/40 font-mono">
+          <div className="text-[11px] sm:text-[12px] text-muted-foreground/40 font-mono whitespace-nowrap">
             {items.length} assets selected
           </div>
         </div>
@@ -494,16 +494,18 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
         <button 
           onClick={handleStartGenerationClick}
           disabled={items.length === 0 || refiningPrompt}
-          className="group flex items-center gap-3 px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-bold shadow-glow-primary hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
+          className="group flex items-center justify-center gap-3 px-6 sm:px-8 py-3.5 sm:py-4 bg-primary text-primary-foreground rounded-2xl font-bold shadow-glow-primary hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 text-[13px] sm:text-[14px]"
         >
           {refiningPrompt ? (
             <>
               <Loader2 className="h-5 w-5 animate-spin" />
-              Optimizing Pipeline...
+              <span className="hidden sm:inline">Optimizing Pipeline...</span>
+              <span className="sm:hidden">Optimizing...</span>
             </>
           ) : (
             <>
-              Generate Creative Content
+              <span className="hidden sm:inline">Generate Creative Content</span>
+              <span className="sm:hidden">Generate</span>
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </>
           )}
@@ -519,7 +521,7 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98, y: 10 }}
             >
-              <div className="relative w-full max-w-4xl rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-white dark:bg-[#0B0D16] p-10 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+              <div className="relative w-full max-w-4xl rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-white dark:bg-[#0B0D16] p-6 sm:p-10 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
               {/* Decorative subtle ambient lighting */}
               <div className="absolute top-[-30%] left-[-30%] w-[60%] h-[60%] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
               
@@ -603,7 +605,7 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98, y: 10 }}
             >
-              <div className="relative w-full max-w-lg rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-white dark:bg-[#0B0D16] p-10 shadow-2xl overflow-hidden">
+              <div className="relative w-full max-w-lg rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-white dark:bg-[#0B0D16] p-6 sm:p-10 shadow-2xl overflow-hidden">
               <div className="absolute top-[-30%] left-[-30%] w-[60%] h-[60%] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
               
               <div className="flex items-center justify-between mb-8 pb-6 border-b border-black/5 dark:border-white/5 relative z-10">
@@ -687,7 +689,7 @@ ${prompt || 'High-end commercial fashion editorial. Clean, professional, aspirat
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
           >
-            <div className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[60] min-w-[320px]">
+            <div className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[60] w-[calc(100vw-2rem)] sm:w-auto sm:min-w-[320px]">
             <div className="bg-white dark:bg-[#0B0D16] border border-emerald-500/20 rounded-3xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.4)] backdrop-blur-2xl relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/0 via-emerald-500/50 to-emerald-500/0" />
               

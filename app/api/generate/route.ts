@@ -58,7 +58,7 @@ export async function POST(request: Request) {
         // Silent fail - worker will run on schedule anyway
         console.log('ℹ️  On-demand worker trigger skipped (will run on schedule)')
       })
-    } catch (e) {
+    } catch {
       console.log('ℹ️  Could not trigger on-demand worker')
     }
     

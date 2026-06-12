@@ -98,10 +98,10 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-full pb-20">
-      <div className="max-w-[1400px] mx-auto px-6 pt-20">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 pt-20">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 sm:mb-12">
           <div>
-            <h1 className="text-5xl font-bold tracking-tight mb-3">Workspace <span className="text-muted-foreground/30">Overview</span></h1>
+            <h1 className="text-3xl sm:text-5xl font-bold tracking-tight mb-3">Workspace <span className="text-muted-foreground/30">Overview</span></h1>
             <p className="text-muted-foreground/60 text-lg max-w-xl">Orchestrate your creative pipeline and monitor generation throughput in real-time.</p>
           </div>
           <div className="flex items-center gap-3">
@@ -125,8 +125,8 @@ export default function DashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               whileHover={{ y: -5 }}
               transition={{ delay: i * 0.1 }}
-              // @ts-ignore
-              className="group relative p-7 rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-white/80 dark:bg-card/30 backdrop-blur-xl hover:shadow-elevated transition-all duration-500 shadow-soft"
+              // @ts-expect-error framer-motion type
+              className="group relative p-5 sm:p-7 rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-white/80 dark:bg-card/30 backdrop-blur-xl hover:shadow-elevated transition-all duration-500 shadow-soft"
             >
               <div className={`h-12 w-12 rounded-2xl ${stat.bg} flex items-center justify-center mb-5 transition-transform duration-500 group-hover:scale-110`}>
                 <stat.icon className={`h-6 w-6 ${stat.color}`} />
@@ -153,7 +153,7 @@ export default function DashboardPage() {
             </div>
 
             {recentJobsData.length === 0 ? (
-              <div className="rounded-[2.5rem] border-2 border-dashed border-black/5 dark:border-white/10 bg-white/40 dark:bg-card/10 p-16 text-center shadow-soft">
+              <div className="rounded-[2.5rem] border-2 border-dashed border-black/5 dark:border-white/10 bg-white/40 dark:bg-card/10 p-8 sm:p-16 text-center shadow-soft">
                 <p className="text-muted-foreground/60 mb-8 max-w-xs mx-auto">No active or completed jobs found in this workspace. Start your first creative session.</p>
                 <Link href="/upload" className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-full text-sm font-bold active:scale-95 transition-all shadow-glow">
                   Initialize Campaign
@@ -167,19 +167,19 @@ export default function DashboardPage() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.4 + i * 0.1 }}
-                    // @ts-ignore
-                    className="flex items-center justify-between p-5 rounded-[2rem] border border-black/5 dark:border-white/5 bg-white/60 dark:bg-card/20 hover:bg-white dark:hover:bg-card/40 transition-all group shadow-soft hover:shadow-elevated"
+                    // @ts-expect-error framer-motion type
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0 p-5 rounded-[2rem] border border-black/5 dark:border-white/5 bg-white/60 dark:bg-card/20 hover:bg-white dark:hover:bg-card/40 transition-all group shadow-soft hover:shadow-elevated"
                   >
                     <div className="flex items-center gap-5">
-                      <div className="h-14 w-14 rounded-2xl overflow-hidden bg-slate-100 dark:bg-muted border border-black/5 dark:border-white/10 relative">
+                      <div className="h-14 w-14 rounded-2xl overflow-hidden bg-slate-100 dark:bg-muted border border-black/5 dark:border-white/10 relative shrink-0">
                         <Image src={job.thumbnail} alt={job.outfit} fill sizes="56px" className="object-cover group-hover:scale-110 transition-transform duration-700" />
                       </div>
-                      <div>
-                        <div className="font-bold text-[15px] mb-1">{job.outfit}</div>
-                        <div className="text-[11px] text-muted-foreground/40 font-bold uppercase tracking-widest">{job.id} • {job.date}</div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-bold text-[15px] mb-1 truncate">{job.outfit}</div>
+                        <div className="text-[11px] text-muted-foreground/40 font-bold uppercase tracking-widest truncate">{job.id} • {job.date}</div>
                       </div>
                     </div>
-                      <div className="flex items-center gap-8">
+                      <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-8">
                         <div className="flex items-center gap-3">
                           <div className={`h-2 w-2 rounded-full ${
                             job.status === "Completed" || job.status === "Done" ? "bg-emerald-500" : 
@@ -214,7 +214,7 @@ export default function DashboardPage() {
 
           <div className="col-span-12 lg:col-span-4 space-y-8">
             <h2 className="text-2xl font-bold px-2">Insights</h2>
-            <div className="p-8 rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-gradient-to-br from-primary/10 to-blue-500/10 backdrop-blur-xl relative overflow-hidden group shadow-soft">
+            <div className="p-6 sm:p-8 rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-gradient-to-br from-primary/10 to-blue-500/10 backdrop-blur-xl relative overflow-hidden group shadow-soft">
               <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                 <ImageIcon className="h-32 w-32" />
               </div>
@@ -227,7 +227,7 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            <div className="p-8 rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-white/80 dark:bg-card/30 backdrop-blur-xl shadow-soft">
+            <div className="p-6 sm:p-8 rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-white/80 dark:bg-card/30 backdrop-blur-xl shadow-soft">
               <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40 mb-6">Infrastructure Usage</h3>
               <div className="space-y-5">
                 <div className="flex justify-between text-xs font-bold">
@@ -239,7 +239,7 @@ export default function DashboardPage() {
                     initial={{ width: 0 }}
                     animate={{ width: "41%" }}
                     transition={{ duration: 1.5, ease: "easeOut" }}
-                    // @ts-ignore
+                    // @ts-expect-error framer-motion type
                     className="h-full bg-primary"
                   />
                 </div>

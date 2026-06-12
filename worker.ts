@@ -3,10 +3,11 @@ dotenv.config()
 
 import { setupWorker } from './server/workers/generationWorker'
 import { connection } from './lib/queue'
+import type { Worker } from 'bullmq'
 
 console.log('🚀 Starting AI Generation Worker...')
 
-let worker: any = null
+let worker: Worker | null = null
 let isShuttingDown = false
 
 async function checkConnections() {

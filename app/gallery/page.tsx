@@ -207,15 +207,15 @@ export default function GalleryPage() {
 
   return (
     <div className="min-h-full pb-20">
-      <div className="max-w-[1500px] mx-auto px-6 pt-20">
+      <div className="max-w-[1500px] mx-auto px-4 sm:px-6 pt-20">
         {/* Gallery Title Area */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 sm:mb-12">
           <div>
             <div className="flex items-center gap-2.5 text-primary font-bold text-[11px] uppercase tracking-[0.2em] mb-3 opacity-80">
               <Package className="h-3.5 w-3.5" />
               Campaign Production Assets
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-4 leading-[0.95]">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-4 leading-[0.95]">
               Output <span className="text-muted-foreground/30">Library</span>
             </h1>
             <p className="text-muted-foreground/60 text-lg max-w-2xl leading-relaxed">
@@ -299,8 +299,8 @@ export default function GalleryPage() {
                   key={group.outfitId}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  // @ts-ignore
-                  className="rounded-[3rem] border border-black/5 dark:border-white/5 bg-white/40 dark:bg-white/[0.01] p-8 backdrop-blur-xl shadow-soft"
+                  // @ts-expect-error framer-motion type
+                  className="rounded-[3rem] border border-black/5 dark:border-white/5 bg-white/40 dark:bg-white/[0.01] p-4 sm:p-8 backdrop-blur-xl shadow-soft"
                 >
                   <div className="flex flex-col lg:flex-row gap-10">
                     {/* Source Garment */}
@@ -419,7 +419,7 @@ function GalleryCard({
       layout
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      // @ts-ignore
+      // @ts-expect-error framer-motion type
       className="group relative rounded-[2rem] overflow-hidden bg-white dark:bg-white/[0.02] border border-black/5 dark:border-white/5 transition-all duration-500 shadow-soft hover:shadow-elevated"
     >
       <div className="relative aspect-[3/4] w-full overflow-hidden">
@@ -520,7 +520,7 @@ function ImageComparisonOverlay({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      // @ts-ignore
+      // @ts-expect-error framer-motion type
       className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-12 backdrop-blur-2xl bg-white/40 dark:bg-black/80"
     >
       <div className="absolute inset-0 cursor-pointer" onClick={onClose} />
@@ -528,10 +528,10 @@ function ImageComparisonOverlay({
       <motion.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        // @ts-ignore
-        className="relative w-full max-w-6xl h-full max-h-[900px] rounded-[3rem] overflow-hidden bg-white dark:bg-[#0A0A0B] border border-black/5 dark:border-white/5 shadow-2xl flex flex-col lg:flex-row"
+        // @ts-expect-error framer-motion type
+        className="relative w-full max-w-6xl h-full max-h-[90vh] lg:max-h-[900px] rounded-[2rem] sm:rounded-[3rem] overflow-hidden bg-white dark:bg-[#0A0A0B] border border-black/5 dark:border-white/5 shadow-2xl flex flex-col lg:flex-row"
       >
-        <button onClick={onClose} className="absolute top-6 right-6 z-20 h-10 w-10 rounded-full bg-black/10 dark:bg-white/10 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all">
+        <button onClick={onClose} className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20 h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-black/40 sm:bg-black/10 dark:bg-white/10 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all backdrop-blur-md">
           <X className="h-5 w-5" />
         </button>
 
@@ -587,16 +587,16 @@ function ImageComparisonOverlay({
           />
 
           {/* Labels */}
-          <div className="absolute top-8 left-8 flex gap-3 pointer-events-none z-40">
-            <div className="flex flex-col gap-2">
-              <span className="bg-black/40 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-[0.2em] px-4 py-2 rounded-full border border-white/10 shadow-lg inline-block">Source Garment</span>
-              <span className="bg-primary/80 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-[0.2em] px-4 py-2 rounded-full border border-primary/20 shadow-lg inline-block">AI Synthesis</span>
+          <div className="absolute top-4 sm:top-8 left-4 sm:left-8 flex gap-2 sm:gap-3 pointer-events-none z-40">
+            <div className="flex flex-col gap-1.5 sm:gap-2">
+              <span className="bg-black/40 backdrop-blur-md text-white text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.2em] px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/10 shadow-lg inline-block">Source Garment</span>
+              <span className="bg-primary/80 backdrop-blur-md text-white text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.2em] px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-primary/20 shadow-lg inline-block">AI Synthesis</span>
             </div>
           </div>
         </div>
 
         {/* Analysis Panel */}
-        <div className="w-full lg:w-96 p-10 flex flex-col gap-10 bg-white dark:bg-[#0A0A0B] overflow-y-auto custom-scrollbar">
+        <div className="w-full lg:w-96 p-6 sm:p-10 flex flex-col gap-6 sm:gap-10 bg-white dark:bg-[#0A0A0B] overflow-y-auto custom-scrollbar">
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-primary font-bold text-[11px] uppercase tracking-[0.2em] opacity-80">
               <ShieldCheck className="h-3.5 w-3.5" />
@@ -615,7 +615,7 @@ function ImageComparisonOverlay({
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: "98.4%" }}
-                // @ts-ignore
+                // @ts-expect-error framer-motion type
                 className="h-full bg-emerald-500"
               />
             </div>
@@ -635,7 +635,7 @@ function ImageComparisonOverlay({
                 <button
                   key={check}
                   onClick={() => onToggleChecklist(check)}
-                  className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all ${checklist[check]
+                  className={`w-full flex items-center gap-3 p-3 sm:p-4 rounded-2xl border transition-all ${checklist[check]
                       ? "bg-emerald-50/50 dark:bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
                       : "bg-slate-50 dark:bg-white/[0.02] border-black/5 dark:border-white/5 text-muted-foreground/60 hover:border-black/10"
                     }`}
