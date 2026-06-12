@@ -8,55 +8,27 @@
 
 ---
 
-## 🎬 Demo & Results
-
-### Watch It In Action
-
-📹 **Demo Video** — See the AI outfit generation workflow:
-
-```html
-<video width="100%" controls style="border-radius: 8px; margin: 20px 0;">
-  <source src="/demo/videos/demo.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
-```
-
-*Showcases: Upload workflow → AI processing → Real-time dashboard → Gallery with before/after comparisons*
-
-**📁 Add your demo video:**
-- Place video file in: `public/demo/videos/demo.mp4`
-- Format: MP4 (H.264 codec), 1280x720 or 1920x1080, under 10MB
-- See: [Video Setup Guide](./public/demo/videos/README.md)
-
----
-
 ### Before & After Gallery
 
 Transform your fashion designs with our AI! Here are sample results showing the power of outfit generation:
 
-#### Example 1: Linen Embroidery.
+#### Example 1: Linen Embroidery
 | Original Design | AI Generated Variations |
 |---|---|
-| ![Before: Winter Jacket](/demo/before-after/linen/before.webp) | ![After: Winter Jacket Variations](/demo/before-after/winter-jacket/after.jpg) |
+| ![Before: Winter Jacket](/demo/before-after/linen/before.webp) | ![After: Winter Jacket Variations](/demo/before-after/linen/after.jpg) |
 | Original uploaded garment | Multiple style interpretations with texture & consistency preserved |
 
-#### Example 2: Summer Dress Collection
+#### Example 2: Winter
 | Original Design | AI Generated Variations |
 |---|---|
-| ![Before: Summer Dress](/demo/before-after/summer-dress/before.jpg) | ![After: Summer Dress Variations](/demo/before-after/summer-dress/after.jpg) |
+| ![Before: Summer Dress](/demo/before-after/winter/before.webp) | ![After: Summer Dress Variations](/demo/before-after/winter/after.jpg) |
 | Clean, simple design | Rich, detailed variations maintaining original structure |
 
-#### Example 3: Formal Wear Styling
+#### Example 3: Jackets
 | Original Design | AI Generated Variations |
 |---|---|
-| ![Before: Formal Wear](/demo/before-after/formal-wear/before.jpg) | ![After: Formal Wear Variations](/demo/before-after/formal-wear/after.jpg) |
+| ![Before: Formal Wear](/demo/before-after/jacket/before.webp) | ![After: Formal Wear Variations](/demo/before-after/jacket/after.jpg) |
 | Minimalist formal outfit | Sophisticated variations with enhanced details |
-
-**📁 Add your before/after images:**
-- Create folders: `public/demo/before-after/{category-name}/`
-- Add files: `before.jpg` and `after.jpg` for each category
-- Format: JPG/PNG, 400x500px minimum, ~50-100KB each
-- See: [Image Setup Guide](./public/demo/before-after/README.md)
 
 **Key Improvements:**
 - ✨ Enhanced visual details while preserving garment structure
