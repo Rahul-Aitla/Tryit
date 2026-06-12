@@ -34,10 +34,10 @@
 
 Transform your fashion designs with our AI! Here are sample results showing the power of outfit generation:
 
-#### Example 1: Winter Jacket Styling
+#### Example 1: Linen Embroidery.
 | Original Design | AI Generated Variations |
 |---|---|
-| ![Before: Winter Jacket](/demo/before-after/winter-jacket/before.jpg) | ![After: Winter Jacket Variations](/demo/before-after/winter-jacket/after.jpg) |
+| ![Before: Winter Jacket](/demo/before-after/linen/before.webp) | ![After: Winter Jacket Variations](/demo/before-after/winter-jacket/after.jpg) |
 | Original uploaded garment | Multiple style interpretations with texture & consistency preserved |
 
 #### Example 2: Summer Dress Collection
