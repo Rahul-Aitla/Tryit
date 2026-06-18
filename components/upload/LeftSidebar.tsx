@@ -55,7 +55,7 @@ export default function LeftSidebar({ currentProjectId, onSelectProject }: LeftS
         if (res.ok) {
           const data = await res.json()
           const uploads = data as { referenceType: string }[]
-          
+
           const counts = {
             Atmosphere: 12 + uploads.filter(r => r.referenceType === "lighting" || r.referenceType === "background").length,
             Choreography: 6 + uploads.filter(r => r.referenceType === "pose").length,
@@ -70,7 +70,6 @@ export default function LeftSidebar({ currentProjectId, onSelectProject }: LeftS
     }
 
     fetchRefCounts()
-    // Poll for changes every 10 seconds to keep it "real-time"
     const interval = setInterval(fetchRefCounts, 10000)
     return () => clearInterval(interval)
   }, [currentProjectId])
@@ -98,46 +97,46 @@ export default function LeftSidebar({ currentProjectId, onSelectProject }: LeftS
 
   return (
     <div className="space-y-6">
-      <div className="rounded-3xl border border-black/5 dark:border-white/5 bg-white/80 dark:bg-white/[0.01] p-5 backdrop-blur-xl shadow-soft">
+      <div className="border border-hairline bg-card p-5">
         <div className="flex items-center justify-between mb-5 px-1">
-          <div className="flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-primary opacity-80">
+          <div className="eyebrow text-muted-foreground flex items-center gap-2">
             <Layout className="h-3.5 w-3.5" />
             Operations
           </div>
-          <button 
+          <button
             onClick={handleCreateProject}
             disabled={creating}
-            className="p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-all duration-300 disabled:opacity-50"
+            className="p-1.5 hover:bg-muted rounded-sm transition-all duration-300 disabled:opacity-50"
           >
             {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
           </button>
         </div>
-        
-        <nav className="space-y-1.5 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
+
+        <nav className="space-y-1.5 max-h-[300px] overflow-y-auto pr-1">
           {loading ? (
             <div className="py-10 flex flex-col items-center justify-center opacity-40">
               <Loader2 className="h-5 w-5 animate-spin mb-2" />
-              <span className="text-[10px] font-medium">Loading history...</span>
+              <span className="text-xs font-medium">Loading history...</span>
             </div>
           ) : projects.length === 0 ? (
             <div className="py-10 text-center opacity-30">
-              <span className="text-[10px] font-medium">No sessions found</span>
+              <span className="text-xs font-medium">No sessions found</span>
             </div>
           ) : (
             projects.map((project) => (
               <button
                 key={project.id}
                 onClick={() => onSelectProject?.(project.id)}
-                className={`w-full flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-300 group ${
+                className={`w-full flex items-center gap-3.5 px-4 py-2.5 rounded-sm text-sm font-medium transition-all duration-300 group ${
                   currentProjectId === project.id
-                    ? "bg-primary/10 text-primary border border-primary/10" 
-                    : "text-muted-foreground/60 hover:text-foreground hover:bg-black/[0.03] dark:hover:bg-white/[0.03]"
+                    ? "bg-ink text-background"
+                    : "text-muted-foreground hover:text-ink hover:bg-muted"
                 }`}
               >
                 <Briefcase className={`h-4 w-4 transition-transform ${currentProjectId === project.id ? "scale-110" : "group-hover:scale-110"}`} />
                 <div className="flex-1 text-left truncate">{project.projectName}</div>
                 {project._count && project._count.outfits > 0 && (
-                  <span className="text-[9px] font-mono opacity-40">{project._count.outfits}</span>
+                  <span className="text-[10px] font-mono opacity-40">{project._count.outfits}</span>
                 )}
               </button>
             ))
@@ -145,17 +144,17 @@ export default function LeftSidebar({ currentProjectId, onSelectProject }: LeftS
         </nav>
       </div>
 
-      <div className="rounded-3xl border border-black/5 dark:border-white/5 bg-white/80 dark:bg-white/[0.01] p-5 backdrop-blur-xl shadow-soft">
-        <div className="flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#38BDF8] mb-5 px-1 opacity-80">
+      <div className="border border-hairline bg-card p-5">
+        <div className="eyebrow text-muted-foreground flex items-center gap-2 mb-5 px-1">
           <Hash className="h-3.5 w-3.5" />
           Asset Library
         </div>
-        
+
         <div className="grid grid-cols-2 gap-2.5">
           {Object.entries(refCounts).map(([cat, count]) => (
-            <button key={cat} className="flex flex-col items-start gap-1 p-3.5 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 hover:border-black/10 dark:hover:border-white/10 transition-all duration-300 hover:bg-black/[0.05] dark:hover:bg-white/[0.05]">
-              <span className="text-[12px] font-semibold text-foreground/80">{cat}</span>
-              <span className="text-[10px] text-muted-foreground/40 font-mono">{count} items</span>
+            <button key={cat} className="flex flex-col items-start gap-1 p-3.5 border border-hairline bg-muted hover:bg-muted/80 transition-all duration-300">
+              <span className="text-sm font-medium text-ink">{cat}</span>
+              <span className="text-xs text-muted-foreground font-mono">{count} items</span>
             </button>
           ))}
         </div>

@@ -29,21 +29,28 @@ module.exports = {
         input: 'var(--input)',
         ring: 'var(--ring)',
         sidebar: 'var(--sidebar)',
-        success: '#10B981',
-        warning: '#F59E0B',
+        ink: 'var(--ink)',
+        'ink-soft': 'var(--ink-soft)',
+        graphite: 'var(--graphite)',
+        slate: 'var(--slate)',
+        stone: 'var(--stone)',
+        hairline: 'var(--hairline)',
+        scrim: 'var(--scrim)',
+        footer: 'var(--footer)',
       },
       borderRadius: {
-        xl: '1rem',
-        '2xl': '1.5rem',
-        '3xl': '2rem',
-        '4xl': '2.5rem'
+        xs: '4px',
+        sm: '6px',
+        md: '8px',
+        lg: '16px',
+        xl: '24px',
+        full: '9999px',
       },
-      boxShadow: {
-        soft: '0 8px 30px rgba(0, 0, 0, 0.04)',
-        elevated: '0 20px 60px rgba(109, 94, 245, 0.08)',
-        glow: '0 0 20px var(--ring)',
-        'glow-primary': '0 0 30px rgba(109, 94, 245, 0.12)',
-      }
+      fontFamily: {
+        display: ['var(--font-space-grotesk)', 'sans-serif'],
+        sans: ['var(--font-inter)', 'sans-serif'],
+        mono: ['var(--font-jetbrains-mono)', 'monospace'],
+      },
     }
   },
   plugins: []

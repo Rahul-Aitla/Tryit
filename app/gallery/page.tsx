@@ -136,9 +136,8 @@ export default function GalleryPage() {
 
   const handleDownload = useCallback(async (url: string, filename: string) => {
     try {
-      // Use proxy API to avoid CORS issues and force direct download
       const proxyUrl = `/api/download?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`
-      
+
       const link = document.createElement("a")
       link.href = proxyUrl
       link.setAttribute("download", filename)
@@ -147,7 +146,6 @@ export default function GalleryPage() {
       document.body.removeChild(link)
     } catch (err) {
       console.error("Download failed:", err)
-      // Fallback: Open in new tab if proxy fails
       window.open(url, "_blank")
     }
   }, [])
@@ -155,7 +153,6 @@ export default function GalleryPage() {
   const handleRegenerate = useCallback(async (outfitId: string) => {
     setRegeneratingId(outfitId)
     try {
-      // Logic for regeneration...
       await new Promise(r => setTimeout(r, 2000))
     } finally {
       setRegeneratingId(null)
@@ -199,8 +196,8 @@ export default function GalleryPage() {
   if (loading) {
     return (
       <div className="min-h-full flex flex-col items-center justify-center py-40 gap-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        <p className="text-sm font-semibold text-muted-foreground/60">Indexing generated catalog assets...</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-ink"></div>
+        <p className="text-sm text-muted-foreground">Indexing generated catalog assets...</p>
       </div>
     )
   }
@@ -208,17 +205,16 @@ export default function GalleryPage() {
   return (
     <div className="min-h-full pb-20">
       <div className="max-w-[1500px] mx-auto px-4 sm:px-6 pt-20">
-        {/* Gallery Title Area */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 sm:mb-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
-            <div className="flex items-center gap-2.5 text-primary font-bold text-[11px] uppercase tracking-[0.2em] mb-3 opacity-80">
-              <Package className="h-3.5 w-3.5" />
+            <div className="eyebrow text-muted-foreground mb-3">
+              <Package className="h-3.5 w-3.5 inline mr-2" />
               Campaign Production Assets
             </div>
-            <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-4 leading-[0.95]">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-display font-normal tracking-[-1.5px] leading-[1] mb-4">
               Output <span className="text-muted-foreground/30">Library</span>
             </h1>
-            <p className="text-muted-foreground/60 text-lg max-w-2xl leading-relaxed">
+            <p className="text-muted-foreground text-base max-w-2xl leading-relaxed">
               Inspect generated models, validate garment textures with the comparator slider, and approve finalized brand creative for production.
             </p>
           </div>
@@ -226,12 +222,12 @@ export default function GalleryPage() {
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => fetchGallery(true)}
-              className="p-3.5 bg-white dark:bg-white/[0.03] hover:bg-slate-50 dark:hover:bg-white/[0.08] border border-black/5 dark:border-white/5 rounded-full transition-all shadow-soft"
+              className="p-3 border border-hairline rounded-full transition-all hover:bg-muted"
               title="Refresh Gallery"
             >
               <RefreshCw className="h-4 w-4 text-muted-foreground" />
             </button>
-            <div className="bg-white/80 dark:bg-white/[0.03] backdrop-blur-xl border border-black/5 dark:border-white/5 p-1.5 rounded-full flex gap-1 shadow-soft">
+            <div className="border border-hairline p-1 rounded-full flex gap-1">
               {[
                 { mode: "outfit", label: "Groups", icon: Package },
                 { mode: "grid", label: "Grid", icon: Grid2X2 },
@@ -239,10 +235,10 @@ export default function GalleryPage() {
                 <button
                   key={m.mode}
                   onClick={() => setViewMode(m.mode as "outfit" | "grid")}
-                  className={`flex items-center gap-2 px-5 py-2 rounded-full text-[12px] font-bold transition-all ${
+                  className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-semibold transition-all ${
                     viewMode === m.mode
-                      ? "bg-primary text-white shadow-glow"
-                      : "text-muted-foreground/50 hover:text-foreground"
+                      ? "bg-ink text-background"
+                      : "text-muted-foreground hover:text-ink"
                   }`}
                 >
                   <m.icon className="h-3.5 w-3.5" />
@@ -253,16 +249,15 @@ export default function GalleryPage() {
           </div>
         </div>
 
-        {/* Filters and Search */}
         <div className="flex flex-col md:flex-row items-center gap-4 mb-12">
           <div className="relative flex-1 w-full">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search by outfit SKU or campaign title..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-white/80 dark:bg-white/[0.02] backdrop-blur-xl border border-black/5 dark:border-white/5 rounded-2xl py-4 pl-14 pr-6 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-soft placeholder:text-muted-foreground/30"
+              className="w-full border border-hairline bg-background py-3.5 pl-12 pr-4 text-sm font-medium focus:outline-none focus:border-ink transition-all placeholder:text-muted-foreground"
             />
           </div>
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 w-full md:w-auto">
@@ -270,10 +265,10 @@ export default function GalleryPage() {
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-5 py-3 rounded-2xl text-[12px] font-bold whitespace-nowrap transition-all border ${
+                className={`px-5 py-2.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${
                   selectedCategory === cat
-                    ? "bg-primary/10 text-primary border-primary/20"
-                    : "bg-white/80 dark:bg-white/[0.02] border-black/5 dark:border-white/5 text-muted-foreground/60 hover:border-black/10 shadow-soft"
+                    ? "bg-ink text-background border-ink"
+                    : "border-hairline text-muted-foreground hover:text-ink hover:border-ink"
                 }`}
               >
                 {cat}
@@ -282,16 +277,15 @@ export default function GalleryPage() {
           </div>
         </div>
 
-        {/* Main Content Area */}
-        <div className="space-y-12">
+        <div className="space-y-8">
           {viewMode === "outfit" ? (
             outfitGroups.length === 0 ? (
               <div className="py-32 flex flex-col items-center justify-center text-center">
-                <div className="h-20 w-20 rounded-[2rem] bg-slate-50 dark:bg-white/[0.03] border border-black/5 dark:border-white/5 flex items-center justify-center mb-6 shadow-soft">
-                  <GalleryIcon className="h-8 w-8 text-muted-foreground/20" />
+                <div className="h-20 w-20 rounded-full bg-muted border border-hairline flex items-center justify-center mb-6">
+                  <GalleryIcon className="h-8 w-8 text-muted-foreground/30" />
                 </div>
-                <h3 className="text-xl font-bold mb-2">No assets discovered</h3>
-                <p className="text-muted-foreground/40 max-w-xs text-sm">Your generation pipeline is currently empty. Start a new session to populate your library.</p>
+                <h3 className="text-xl font-display font-normal mb-2">No assets discovered</h3>
+                <p className="text-muted-foreground max-w-xs text-sm">Your generation pipeline is currently empty. Start a new session to populate your library.</p>
               </div>
             ) : (
               outfitGroups.map((group) => (
@@ -300,33 +294,32 @@ export default function GalleryPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   // @ts-expect-error framer-motion type
-                  className="rounded-[3rem] border border-black/5 dark:border-white/5 bg-white/40 dark:bg-white/[0.01] p-4 sm:p-8 backdrop-blur-xl shadow-soft"
+                  className="border border-hairline bg-card p-4 sm:p-8"
                 >
                   <div className="flex flex-col lg:flex-row gap-10">
-                    {/* Source Garment */}
                     <div className="lg:w-80 space-y-6">
-                      <div className="relative aspect-[3/4] rounded-[2rem] overflow-hidden border border-black/5 dark:border-white/10 shadow-soft group">
+                      <div className="relative aspect-[3/4] overflow-hidden border border-hairline bg-muted group">
                         <Image
                           src={group.original}
                           alt={group.outfitName}
                           fill
                           className="object-cover transition-transform duration-700 group-hover:scale-105"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <div className="absolute bottom-4 left-4 right-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
-                          <span className="text-[10px] font-bold text-white uppercase tracking-widest bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-lg">Source Asset</span>
+                        <div className="absolute inset-0 bg-gradient-to-t from-scrim/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute bottom-4 left-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+                          <span className="micro-caps bg-scrim/80 text-white/70 px-3 py-1.5 rounded-full backdrop-blur-sm">Source Asset</span>
                         </div>
                       </div>
                       <div className="space-y-4 px-2">
                         <div>
-                          <h3 className="text-xl font-bold mb-1 truncate">{group.outfitName}</h3>
-                          <p className="text-[11px] font-bold text-primary uppercase tracking-[0.2em]">{group.category}</p>
+                          <h3 className="text-lg font-semibold font-display mb-1 truncate">{group.outfitName}</h3>
+                          <p className="micro-caps text-muted-foreground">{group.category}</p>
                         </div>
                         <div className="flex flex-col gap-2">
                           <button
                             onClick={() => handleRegenerate(group.outfitId)}
                             disabled={regeneratingId === group.outfitId}
-                            className="w-full flex items-center justify-center gap-2 py-3 bg-white dark:bg-white/[0.05] hover:bg-slate-50 dark:hover:bg-white/[0.1] border border-black/5 dark:border-white/5 rounded-xl text-[12px] font-bold transition-all disabled:opacity-50 shadow-soft"
+                            className="w-full flex items-center justify-center gap-2 py-3 border border-hairline rounded-full text-xs font-semibold transition-all disabled:opacity-50 hover:bg-muted"
                           >
                             <RotateCcw className={`h-3.5 w-3.5 ${regeneratingId === group.outfitId ? "animate-spin" : ""}`} />
                             Resynthesize
@@ -335,11 +328,10 @@ export default function GalleryPage() {
                       </div>
                     </div>
 
-                    {/* Generated Campaign Variations */}
                     <div className="flex-1 space-y-8">
-                      <div className="flex items-center justify-between border-b border-black/5 dark:border-white/5 pb-4">
-                        <h4 className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40 flex items-center gap-2">
-                          Campaign Variations <span className="text-primary font-mono">{group.items.length}</span>
+                      <div className="flex items-center justify-between border-b border-hairline pb-4">
+                        <h4 className="micro-caps text-muted-foreground flex items-center gap-2">
+                          Campaign Variations <span className="text-ink font-mono">{group.items.length}</span>
                         </h4>
                       </div>
 
@@ -364,8 +356,7 @@ export default function GalleryPage() {
               ))
             )
           ) : (
-            /* Standard Grid View */
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
               {filteredItems.map((item) => (
                 <GalleryCard
                   key={item.id}
@@ -384,7 +375,6 @@ export default function GalleryPage() {
         </div>
       </div>
 
-      {/* Comparison Modal Overlay */}
       <AnimatePresence>
         {compareId && (
           <ImageComparisonOverlay
@@ -420,7 +410,7 @@ function GalleryCard({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       // @ts-expect-error framer-motion type
-      className="group relative rounded-[2rem] overflow-hidden bg-white dark:bg-white/[0.02] border border-black/5 dark:border-white/5 transition-all duration-500 shadow-soft hover:shadow-elevated"
+      className="group relative overflow-hidden border border-hairline bg-card transition-all duration-500"
     >
       <div className="relative aspect-[3/4] w-full overflow-hidden">
         <Image
@@ -431,35 +421,33 @@ function GalleryCard({
           className="object-cover transition-transform duration-1000 group-hover:scale-105"
         />
 
-        {/* Status Badges */}
         <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
           {status === "approved" && (
-            <div className="bg-emerald-500 text-white p-1.5 rounded-full shadow-lg">
+            <div className="bg-ink text-background p-1.5 rounded-full shadow-lg">
               <CheckCircle className="h-4 w-4" />
             </div>
           )}
           {status === "flagged" && (
-            <div className="bg-rose-500 text-white p-1.5 rounded-full shadow-lg">
+            <div className="bg-destructive text-white p-1.5 rounded-full shadow-lg">
               <AlertTriangle className="h-4 w-4" />
             </div>
           )}
         </div>
 
-        {/* Hover Actions */}
-        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 backdrop-blur-[2px]" />
+        <div className="absolute inset-0 bg-scrim/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
         <div className="absolute inset-x-4 bottom-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 flex flex-col gap-3">
           <div className="flex gap-2">
             <button
               onClick={() => setCompareId(item.id)}
-              className="flex-1 flex items-center justify-center gap-2 py-3 bg-white/90 dark:bg-white/10 backdrop-blur-md text-foreground dark:text-white rounded-xl text-[12px] font-bold hover:bg-white transition-all shadow-lg"
+              className="flex-1 flex items-center justify-center gap-2 py-3 bg-background/90 text-ink rounded-full text-xs font-semibold hover:bg-background transition-all"
             >
               <ArrowRightLeft className="h-4 w-4" />
               Analyze
             </button>
             <button
               onClick={() => handleDownload(item.generated, `${item.outfitName}-campaign.jpg`)}
-              className="h-12 w-12 flex items-center justify-center bg-white/90 dark:bg-white/10 backdrop-blur-md text-foreground dark:text-white rounded-xl hover:bg-white transition-all shadow-lg"
+              className="h-12 w-12 flex items-center justify-center bg-background/90 text-ink rounded-full hover:bg-background transition-all"
             >
               <Download className="h-4 w-4" />
             </button>
@@ -467,14 +455,14 @@ function GalleryCard({
           <div className="flex gap-2">
             <button
               onClick={() => onSetApproval(item.id, status === "approved" ? null : "approved")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${status === "approved" ? "bg-emerald-500 text-white" : "bg-black/20 text-white hover:bg-emerald-500"
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${status === "approved" ? "bg-ink text-background" : "bg-scrim/60 text-white hover:bg-ink hover:text-background"
                 }`}
             >
               {status === "approved" ? "Approved" : "Approve"}
             </button>
             <button
               onClick={() => onSetApproval(item.id, status === "flagged" ? null : "flagged")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${status === "flagged" ? "bg-rose-500 text-white" : "bg-black/20 text-white hover:bg-rose-500"
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${status === "flagged" ? "bg-destructive text-white" : "bg-scrim/60 text-white hover:bg-destructive"
                 }`}
             >
               {status === "flagged" ? "Flagged" : "Flag"}
@@ -482,7 +470,7 @@ function GalleryCard({
             <button
               onClick={() => handleDelete(item.id)}
               disabled={deletingId === item.id}
-              className="h-9 w-9 flex items-center justify-center bg-black/20 text-white rounded-lg hover:bg-rose-600 transition-all"
+              className="h-9 w-9 flex items-center justify-center bg-scrim/60 text-white rounded-full hover:bg-destructive transition-all"
             >
               {deletingId === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
             </button>
@@ -491,10 +479,10 @@ function GalleryCard({
       </div>
 
       <div className="p-5 space-y-1">
-        <h5 className="font-bold text-[14px] truncate">{item.outfitName}</h5>
-        <div className="flex items-center justify-between text-[11px] text-muted-foreground/50 font-medium">
+        <h5 className="text-sm font-semibold truncate">{item.outfitName}</h5>
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>{item.title}</span>
-          <span className="font-mono text-[9px]">{new Date(item.createdAt).toLocaleDateString()}</span>
+          <span className="font-mono text-[10px]">{new Date(item.createdAt).toLocaleDateString()}</span>
         </div>
       </div>
     </motion.div>
@@ -521,7 +509,7 @@ function ImageComparisonOverlay({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       // @ts-expect-error framer-motion type
-      className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-12 backdrop-blur-2xl bg-white/40 dark:bg-black/80"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-12 bg-background/95"
     >
       <div className="absolute inset-0 cursor-pointer" onClick={onClose} />
 
@@ -529,53 +517,48 @@ function ImageComparisonOverlay({
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         // @ts-expect-error framer-motion type
-        className="relative w-full max-w-6xl h-full max-h-[90vh] lg:max-h-[900px] rounded-[2rem] sm:rounded-[3rem] overflow-hidden bg-white dark:bg-[#0A0A0B] border border-black/5 dark:border-white/5 shadow-2xl flex flex-col lg:flex-row"
+        className="relative w-full max-w-6xl h-full max-h-[90vh] lg:max-h-[900px] overflow-hidden bg-card border border-hairline flex flex-col lg:flex-row"
       >
-        <button onClick={onClose} className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20 h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-black/40 sm:bg-black/10 dark:bg-white/10 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all backdrop-blur-md">
+        <button onClick={onClose} className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20 h-10 w-10 rounded-full bg-muted flex items-center justify-center hover:bg-destructive hover:text-white transition-all">
           <X className="h-5 w-5" />
         </button>
 
-        {/* Comparison Section */}
-        <div className="flex-1 relative bg-slate-50 dark:bg-black overflow-hidden group flex items-center justify-center">
+        <div className="flex-1 relative bg-muted overflow-hidden group flex items-center justify-center">
           <div className="relative w-full h-full select-none">
-            {/* Original Image (Background) */}
             <div className="absolute inset-0">
-              <Image 
-                src={item.original} 
-                alt="Original" 
-                fill 
-                className="object-contain" 
+              <Image
+                src={item.original}
+                alt="Original"
+                fill
+                className="object-contain"
                 priority
               />
             </div>
 
-            {/* Generated Image (Foreground with Clip) */}
             <div
               className="absolute inset-0 z-10 overflow-hidden"
               style={{ clipPath: `inset(0 ${100 - sliderVal}% 0 0)` }}
             >
-              <Image 
-                src={item.generated} 
-                alt="Generated" 
-                fill 
-                className="object-contain" 
+              <Image
+                src={item.generated}
+                alt="Generated"
+                fill
+                className="object-contain"
                 priority
               />
             </div>
 
-            {/* Handle UI (Visual only) */}
             <div
               className="absolute top-0 bottom-0 pointer-events-none z-20"
               style={{ left: `${sliderVal}%` }}
             >
               <div className="h-full w-[2px] bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)]" />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white text-black shadow-2xl flex items-center justify-center border-4 border-primary/20 scale-110">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white text-ink shadow-2xl flex items-center justify-center border-4 border-ink/20 scale-110">
                 <ArrowRightLeft className="h-5 w-5" />
               </div>
             </div>
           </div>
 
-          {/* Slider Control (Actual Interaction) */}
           <input
             type="range"
             min="0"
@@ -586,48 +569,44 @@ function ImageComparisonOverlay({
             className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30"
           />
 
-          {/* Labels */}
           <div className="absolute top-4 sm:top-8 left-4 sm:left-8 flex gap-2 sm:gap-3 pointer-events-none z-40">
             <div className="flex flex-col gap-1.5 sm:gap-2">
-              <span className="bg-black/40 backdrop-blur-md text-white text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.2em] px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/10 shadow-lg inline-block">Source Garment</span>
-              <span className="bg-primary/80 backdrop-blur-md text-white text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.2em] px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-primary/20 shadow-lg inline-block">AI Synthesis</span>
+              <span className="bg-scrim/60 text-white text-[10px] font-semibold uppercase tracking-wider px-3 sm:px-4 py-1.5 sm:py-2 rounded-full backdrop-blur-sm border border-white/10 inline-block">Source Garment</span>
+              <span className="bg-ink/80 text-white text-[10px] font-semibold uppercase tracking-wider px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/10 inline-block">AI Synthesis</span>
             </div>
           </div>
         </div>
 
-        {/* Analysis Panel */}
-        <div className="w-full lg:w-96 p-6 sm:p-10 flex flex-col gap-6 sm:gap-10 bg-white dark:bg-[#0A0A0B] overflow-y-auto custom-scrollbar">
+        <div className="w-full lg:w-96 p-6 sm:p-10 flex flex-col gap-6 sm:gap-10 bg-card overflow-y-auto">
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-primary font-bold text-[11px] uppercase tracking-[0.2em] opacity-80">
+            <div className="eyebrow text-muted-foreground flex items-center gap-2">
               <ShieldCheck className="h-3.5 w-3.5" />
               Fidelity Analysis
             </div>
-            <h3 className="text-2xl font-bold tracking-tight">{item.outfitName}</h3>
+            <h3 className="text-2xl font-display font-normal tracking-[-0.8px]">{item.outfitName}</h3>
           </div>
 
-          {/* Confidence Score */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between text-sm font-bold">
-              <span className="text-muted-foreground/60">Fidelity Score</span>
-              <span className="text-emerald-500 font-mono">98.4%</span>
+            <div className="flex items-center justify-between text-sm font-semibold">
+              <span className="text-muted-foreground">Fidelity Score</span>
+              <span className="text-ink font-mono">98.4%</span>
             </div>
-            <div className="h-2 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+            <div className="h-2 w-full bg-hairline overflow-hidden rounded-full">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: "98.4%" }}
                 // @ts-expect-error framer-motion type
-                className="h-full bg-emerald-500"
+                className="h-full bg-ink rounded-full"
               />
             </div>
           </div>
 
-          {/* QA Checklist */}
           <div className="space-y-6">
-            <h4 className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40">Technical Validation</h4>
+            <h4 className="micro-caps text-muted-foreground">Technical Validation</h4>
             <div className="space-y-3">
               {[
                 "Stitch Pattern Integrity",
-                "Color Accuracy (ΔE < 2.0)",
+                "Color Accuracy (\u0394E < 2.0)",
                 "Fabric Texture Mapping",
                 "Silhouette Preservation",
                 "Branding & Logo Precision"
@@ -635,23 +614,23 @@ function ImageComparisonOverlay({
                 <button
                   key={check}
                   onClick={() => onToggleChecklist(check)}
-                  className={`w-full flex items-center gap-3 p-3 sm:p-4 rounded-2xl border transition-all ${checklist[check]
-                      ? "bg-emerald-50/50 dark:bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-                      : "bg-slate-50 dark:bg-white/[0.02] border-black/5 dark:border-white/5 text-muted-foreground/60 hover:border-black/10"
+                  className={`w-full flex items-center gap-3 p-3 sm:p-4 rounded-md border transition-all ${checklist[check]
+                      ? "bg-ink/5 border-ink/20 text-ink"
+                      : "bg-muted border-hairline text-muted-foreground hover:border-ink"
                     }`}
                 >
-                  <div className={`h-5 w-5 rounded-md border flex items-center justify-center transition-all ${checklist[check] ? "bg-emerald-500 border-emerald-500 text-white" : "border-black/10 dark:border-white/10"
+                  <div className={`h-5 w-5 rounded-sm border flex items-center justify-center transition-all ${checklist[check] ? "bg-ink border-ink text-background" : "border-hairline"
                     }`}>
                     {checklist[check] && <CheckSquare className="h-3.5 w-3.5" />}
                   </div>
-                  <span className="text-[13px] font-semibold">{check}</span>
+                  <span className="text-sm font-medium">{check}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="mt-auto pt-6 border-t border-black/5 dark:border-white/5">
-            <p className="text-[11px] text-muted-foreground/40 italic leading-relaxed">
+          <div className="mt-auto pt-6 border-t border-hairline">
+            <p className="text-xs text-muted-foreground italic leading-relaxed">
               * Verified assets are automatically indexed into the brand catalog for multi-channel deployment.
             </p>
           </div>
